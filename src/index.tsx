@@ -120,20 +120,6 @@ app.get('/', (c) => {
                                 <i class="fas fa-play-circle mr-2"></i>이용 방법 보기
                             </a>
                         </div>
-                        <div class="mt-8 flex items-center gap-8">
-                            <div>
-                                <div class="text-3xl font-bold">500+</div>
-                                <div class="text-gray-200">등록 선박</div>
-                            </div>
-                            <div>
-                                <div class="text-3xl font-bold">1,000+</div>
-                                <div class="text-gray-200">활성 사용자</div>
-                            </div>
-                            <div>
-                                <div class="text-3xl font-bold">98%</div>
-                                <div class="text-gray-200">고객 만족도</div>
-                            </div>
-                        </div>
                     </div>
                     <div class="hidden md:block">
                         <div class="bg-white rounded-2xl shadow-2xl p-8">
