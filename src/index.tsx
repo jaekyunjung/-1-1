@@ -1208,6 +1208,584 @@ app.get('/search', (c) => {
   `)
 })
 
+// Booking page
+app.get('/booking/new', (c) => {
+  const vesselId = c.req.query('vessel')
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>선박 예약 - ShipShare</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                colors: {
+                  primary: '#667eea',
+                  secondary: '#764ba2',
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+          .step {
+            opacity: 0.5;
+          }
+          .step.active {
+            opacity: 1;
+          }
+          .step.completed {
+            opacity: 1;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <a href="/" class="flex items-center">
+                            <i class="fas fa-ship text-primary text-2xl mr-3"></i>
+                            <span class="text-2xl font-bold text-gray-800">ShipShare</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/search" class="text-gray-600 hover:text-primary transition">
+                            <i class="fas fa-arrow-left mr-2"></i>검색으로 돌아가기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Progress Steps -->
+            <div class="mb-8">
+                <div class="flex items-center justify-center">
+                    <div class="flex items-center">
+                        <div id="step1-indicator" class="step active flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">1</div>
+                            <span class="ml-2 font-medium">선박 정보</span>
+                        </div>
+                        <div class="w-24 h-1 bg-gray-300 mx-4"></div>
+                        <div id="step2-indicator" class="step flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold">2</div>
+                            <span class="ml-2 font-medium">예약 정보</span>
+                        </div>
+                        <div class="w-24 h-1 bg-gray-300 mx-4"></div>
+                        <div id="step3-indicator" class="step flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold">3</div>
+                            <span class="ml-2 font-medium">결제 확인</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Vessel Information -->
+            <div id="step1" class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-ship mr-3 text-primary"></i>선박 정보 확인
+                </h2>
+                
+                <div id="vessel-loading" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-primary text-3xl mb-4"></i>
+                    <p class="text-gray-600">선박 정보를 불러오는 중...</p>
+                </div>
+
+                <div id="vessel-info" class="hidden">
+                    <!-- Vessel details will be loaded here -->
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button onclick="nextStep(2)" class="bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-secondary transition">
+                        다음 단계
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Booking Information -->
+            <div id="step2" class="hidden bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-clipboard-list mr-3 text-primary"></i>예약 정보 입력
+                </h2>
+
+                <form id="booking-form">
+                    <!-- Cargo Information -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4 pb-2 border-b">
+                            <i class="fas fa-box mr-2"></i>화물 정보
+                        </h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    컨테이너 타입 *
+                                </label>
+                                <select id="container-type" required
+                                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">선택하세요</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    컨테이너 수량 * (1-10)
+                                </label>
+                                <input type="number" id="container-count" required min="1" max="10" value="1"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    화물 중량 (kg) *
+                                </label>
+                                <input type="number" id="cargo-weight" required min="1" step="0.01"
+                                       placeholder="예: 15000"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    화물 품목 *
+                                </label>
+                                <input type="text" id="cargo-description" required
+                                       placeholder="예: 전자제품"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipper Information -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4 pb-2 border-b">
+                            <i class="fas fa-building mr-2"></i>화주 정보
+                        </h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    회사명 *
+                                </label>
+                                <input type="text" id="company-name" required
+                                       placeholder="예: 대한무역"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    담당자명 *
+                                </label>
+                                <input type="text" id="contact-person" required
+                                       placeholder="예: 홍길동"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    연락처 * (숫자만)
+                                </label>
+                                <input type="tel" id="phone" required pattern="[0-9-]+"
+                                       placeholder="예: 010-1234-5678"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    이메일 *
+                                </label>
+                                <input type="email" id="email" required
+                                       placeholder="예: user@company.com"
+                                       class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="form-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+
+                    <div class="flex justify-between mt-6">
+                        <button type="button" onclick="prevStep(1)" 
+                                class="border-2 border-gray-300 text-gray-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>이전 단계
+                        </button>
+                        <button type="submit"
+                                class="bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-secondary transition">
+                            다음 단계
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: Payment Confirmation -->
+            <div id="step3" class="hidden bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-credit-card mr-3 text-primary"></i>결제 정보 확인
+                </h2>
+
+                <!-- Summary -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">예약 요약</h3>
+                    <div id="booking-summary" class="space-y-3">
+                        <!-- Summary will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Total Price -->
+                <div class="bg-primary bg-opacity-10 rounded-lg p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl font-bold text-gray-800">총 결제 금액</span>
+                        <span id="total-price" class="text-3xl font-bold text-primary">$0</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">* VAT 별도</p>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">결제 방법</h3>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-gray-700">
+                            <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                            현재는 예약만 진행됩니다. 실제 결제는 담당자가 별도로 연락드립니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-6">
+                    <button type="button" onclick="prevStep(2)" 
+                            class="border-2 border-gray-300 text-gray-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>이전 단계
+                    </button>
+                    <button onclick="confirmBooking()" id="confirm-btn"
+                            class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                        <i class="fas fa-check-circle mr-2"></i>예약 확정
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-green-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">예약이 완료되었습니다!</h3>
+                    <p class="text-gray-600 mb-6">예약 번호를 확인하세요</p>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-gray-600 mb-1">예약 번호</p>
+                        <p id="booking-number" class="text-2xl font-bold text-primary">SHIP-20250101-0001</p>
+                    </div>
+
+                    <p class="text-sm text-gray-600 mb-6">
+                        예약 확인 이메일이 발송되었습니다.<br/>
+                        담당자가 곧 연락드리겠습니다.
+                    </p>
+
+                    <div class="flex gap-3">
+                        <button onclick="window.location.href='/dashboard'" 
+                                class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                            대시보드로 이동
+                        </button>
+                        <button onclick="window.location.href='/search'" 
+                                class="flex-1 border-2 border-gray-300 text-gray-600 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                            새 검색
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+          let currentStep = 1;
+          let vesselData = null;
+          let selectedContainer = null;
+          let bookingData = {};
+          const vesselId = '${vesselId}';
+
+          // Load vessel information
+          async function loadVesselInfo() {
+            if (!vesselId) {
+              alert('선박 ID가 없습니다. 검색 페이지로 돌아갑니다.');
+              window.location.href = '/search';
+              return;
+            }
+
+            try {
+              const response = await axios.get(\\\`/api/vessels/\\\${vesselId}\\\`);
+              vesselData = response.data.vessel;
+
+              // Populate container type options
+              const containerSelect = document.getElementById('container-type');
+              vesselData.containers.forEach(container => {
+                const option = document.createElement('option');
+                option.value = container.container_type;
+                option.textContent = \\\`\\\${container.container_type} - $\\\${container.price_per_unit.toLocaleString()} (재고: \\\${container.available_quantity}개)\\\`;
+                option.dataset.price = container.price_per_unit;
+                option.dataset.available = container.available_quantity;
+                containerSelect.appendChild(option);
+              });
+
+              // Display vessel info
+              document.getElementById('vessel-loading').classList.add('hidden');
+              document.getElementById('vessel-info').classList.remove('hidden');
+              document.getElementById('vessel-info').innerHTML = \\\`
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">선사</p>
+                    <p class="text-lg font-bold text-gray-800">\\\${vesselData.carrier_name}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">선박명</p>
+                    <p class="text-lg font-bold text-gray-800">\\\${vesselData.vessel_name}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">출발</p>
+                    <p class="font-bold text-gray-800">\\\${vesselData.departure_port}</p>
+                    <p class="text-sm text-gray-600">\\\${new Date(vesselData.departure_date).toLocaleDateString('ko-KR')}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">도착</p>
+                    <p class="font-bold text-gray-800">\\\${vesselData.arrival_port}</p>
+                    <p class="text-sm text-gray-600">\\\${new Date(vesselData.arrival_date).toLocaleDateString('ko-KR')}</p>
+                  </div>
+                </div>
+
+                <div class="mt-6 bg-blue-50 rounded-lg p-4">
+                  <h4 class="font-bold text-gray-700 mb-2">사용 가능한 컨테이너</h4>
+                  <div class="grid md:grid-cols-3 gap-4">
+                    \\\${vesselData.containers.map(c => \\\`
+                      <div class="bg-white rounded p-3">
+                        <p class="font-bold text-gray-800">\\\${c.container_type}</p>
+                        <p class="text-sm text-gray-600">$\\\${c.price_per_unit.toLocaleString()}</p>
+                        <p class="text-xs text-gray-500">재고: \\\${c.available_quantity}개</p>
+                      </div>
+                    \\\`).join('')}
+                  </div>
+                </div>
+              \\\`;
+
+            } catch (error) {
+              console.error('Load vessel error:', error);
+              alert('선박 정보를 불러오는데 실패했습니다.');
+              window.location.href = '/search';
+            }
+          }
+
+          function nextStep(step) {
+            document.getElementById(\\\`step\\\${currentStep}\\\`).classList.add('hidden');
+            document.getElementById(\\\`step\\\${step}\\\`).classList.remove('hidden');
+            
+            document.getElementById(\\\`step\\\${currentStep}-indicator\\\`).classList.remove('active');
+            document.getElementById(\\\`step\\\${currentStep}-indicator\\\`).classList.add('completed');
+            document.getElementById(\\\`step\\\${step}-indicator\\\`).classList.add('active');
+            
+            currentStep = step;
+
+            if (step === 3) {
+              displaySummary();
+            }
+          }
+
+          function prevStep(step) {
+            document.getElementById(\\\`step\\\${currentStep}\\\`).classList.add('hidden');
+            document.getElementById(\\\`step\\\${step}\\\`).classList.remove('hidden');
+            
+            document.getElementById(\\\`step\\\${currentStep}-indicator\\\`).classList.remove('active');
+            document.getElementById(\\\`step\\\${step}-indicator\\\`).classList.add('active');
+            
+            currentStep = step;
+          }
+
+          // Form validation and submission
+          document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formError = document.getElementById('form-error');
+            formError.classList.add('hidden');
+
+            // Get form values
+            const containerType = document.getElementById('container-type').value;
+            const containerCount = parseInt(document.getElementById('container-count').value);
+            const cargoWeight = parseFloat(document.getElementById('cargo-weight').value);
+            const cargoDescription = document.getElementById('cargo-description').value;
+            const companyName = document.getElementById('company-name').value;
+            const contactPerson = document.getElementById('contact-person').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+
+            // Validation
+            if (!containerType) {
+              formError.textContent = '컨테이너 타입을 선택해주세요.';
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            if (containerCount < 1 || containerCount > 10) {
+              formError.textContent = '컨테이너 수량은 1-10개 사이여야 합니다.';
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            const containerOption = document.querySelector(\\\`#container-type option[value="\\\${containerType}"]\\\`);
+            const availableQuantity = parseInt(containerOption.dataset.available);
+            
+            if (containerCount > availableQuantity) {
+              formError.textContent = \\\`선택한 컨테이너 타입의 재고가 부족합니다. (가능: \\\${availableQuantity}개)\\\`;
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            if (cargoWeight <= 0) {
+              formError.textContent = '화물 중량은 양수여야 합니다.';
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            if (!/^[0-9-]+$/.test(phone)) {
+              formError.textContent = '연락처는 숫자와 하이픈(-)만 입력 가능합니다.';
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+              formError.textContent = '올바른 이메일 형식을 입력해주세요.';
+              formError.classList.remove('hidden');
+              return;
+            }
+
+            // Store booking data
+            bookingData = {
+              containerType,
+              containerCount,
+              cargoWeight,
+              cargoDescription,
+              companyName,
+              contactPerson,
+              phone,
+              email,
+              price: parseFloat(containerOption.dataset.price)
+            };
+
+            nextStep(3);
+          });
+
+          function displaySummary() {
+            const total = bookingData.price * bookingData.containerCount;
+            
+            document.getElementById('booking-summary').innerHTML = \\\`
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">선박</span>
+                <span class="font-medium">\\\${vesselData.vessel_name}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">항로</span>
+                <span class="font-medium">\\\${vesselData.departure_port} → \\\${vesselData.arrival_port}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">컨테이너</span>
+                <span class="font-medium">\\\${bookingData.containerType} x \\\${bookingData.containerCount}개</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">화물 중량</span>
+                <span class="font-medium">\\\${bookingData.cargoWeight.toLocaleString()} kg</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">화물 품목</span>
+                <span class="font-medium">\\\${bookingData.cargoDescription}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">회사명</span>
+                <span class="font-medium">\\\${bookingData.companyName}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">담당자</span>
+                <span class="font-medium">\\\${bookingData.contactPerson}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="text-gray-600">연락처</span>
+                <span class="font-medium">\\\${bookingData.phone}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-gray-600">이메일</span>
+                <span class="font-medium">\\\${bookingData.email}</span>
+              </div>
+            \\\`;
+
+            document.getElementById('total-price').textContent = \\\`$\\\${total.toLocaleString()}\\\`;
+          }
+
+          async function confirmBooking() {
+            if (!confirm('정말 예약하시겠습니까?')) {
+              return;
+            }
+
+            const confirmBtn = document.getElementById('confirm-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>처리 중...';
+
+            try {
+              // Get user from localStorage
+              const user = JSON.parse(localStorage.getItem('user') || '{}');
+              const token = localStorage.getItem('token');
+
+              if (!user.id) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return;
+              }
+
+              const response = await axios.post('/api/bookings', {
+                userId: user.id,
+                vesselId: parseInt(vesselId),
+                containerType: bookingData.containerType,
+                quantity: bookingData.containerCount,
+                cargoWeight: bookingData.cargoWeight,
+                cargoDescription: bookingData.cargoDescription,
+                companyName: bookingData.companyName,
+                contactPerson: bookingData.contactPerson,
+                phone: bookingData.phone,
+                email: bookingData.email,
+                notes: ''
+              }, {
+                headers: {
+                  'Authorization': \\\`Bearer \\\${token}\\\`
+                }
+              });
+
+              // Show success modal
+              document.getElementById('booking-number').textContent = response.data.booking.booking_reference;
+              document.getElementById('success-modal').classList.remove('hidden');
+
+            } catch (error) {
+              console.error('Booking error:', error);
+              alert(error.response?.data?.error || '예약 중 오류가 발생했습니다.');
+              confirmBtn.disabled = false;
+              confirmBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>예약 확정';
+            }
+          }
+
+          // Load vessel info on page load
+          loadVesselInfo();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // Dashboard page
 app.get('/dashboard', (c) => {
   return c.html(`

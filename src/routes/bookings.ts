@@ -9,7 +9,10 @@ const bookings = new Hono<{ Bindings: Bindings }>()
 // Create booking
 bookings.post('/', async (c) => {
   try {
-    const { userId, vesselId, containerType, quantity, notes } = await c.req.json()
+    const { 
+      userId, vesselId, containerType, quantity, notes,
+      cargoWeight, cargoDescription, companyName, contactPerson, phone, email
+    } = await c.req.json()
 
     // Validation
     if (!userId || !vesselId || !containerType || !quantity) {
@@ -43,15 +46,23 @@ bookings.post('/', async (c) => {
     // Calculate total price
     const totalPrice = container.price_per_unit * quantity
 
-    // Generate booking reference
-    const bookingRef = `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+    // Generate booking reference with SHIP-YYYYMMDD-XXXX format
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+    const bookingRef = `SHIP-${dateStr}-${randomNum}`
 
-    // Create booking
+    // Create booking with additional fields
     const result = await c.env.DB.prepare(
       `INSERT INTO bookings 
-       (user_id, vessel_id, container_type, quantity, total_price, booking_reference, notes, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(userId, vesselId, containerType, quantity, totalPrice, bookingRef, notes || null, 'pending').run()
+       (user_id, vessel_id, container_type, quantity, total_price, booking_reference, notes, status,
+        cargo_weight, cargo_description, company_name, contact_person, phone, email) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      userId, vesselId, containerType, quantity, totalPrice, bookingRef, notes || null, 'pending',
+      cargoWeight || null, cargoDescription || null, companyName || null, 
+      contactPerson || null, phone || null, email || null
+    ).run()
 
     if (!result.success) {
       return c.json({ error: '예약 생성 중 오류가 발생했습니다.' }, 500)
