@@ -374,6 +374,20 @@ app.get('/login', (c) => {
             </div>
 
             <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <!-- Login Method Tabs -->
+                <div class="flex border-b mb-6">
+                    <button id="tab-email" class="flex-1 py-3 text-center font-semibold border-b-2 border-primary text-primary">
+                        <i class="fas fa-envelope mr-2"></i>이메일
+                    </button>
+                    <button id="tab-hash" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-500 hover:text-primary">
+                        <i class="fas fa-key mr-2"></i>해시키
+                    </button>
+                    <button id="tab-cert" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-500 hover:text-primary">
+                        <i class="fas fa-certificate mr-2"></i>공동인증서
+                    </button>
+                </div>
+
+                <!-- Email Login Form -->
                 <form id="login-form" class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">이메일</label>
@@ -412,6 +426,74 @@ app.get('/login', (c) => {
                     </button>
                 </form>
 
+                <!-- Hash Key Login Form -->
+                <form id="hash-login-form" class="space-y-6 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">블록체인 해시키</label>
+                        <div class="relative">
+                            <i class="fas fa-key absolute left-3 top-3.5 text-gray-400"></i>
+                            <input type="text" id="hash-key" required
+                                   class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                                   placeholder="0x1a2b3c4d5e6f7890...">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>회원가입 시 발급받은 블록체인 해시키를 입력하세요
+                        </p>
+                    </div>
+
+                    <div id="hash-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
+                    <div id="hash-success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
+
+                    <button type="submit" id="hash-login-btn"
+                            class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                        <i class="fas fa-key mr-2"></i>해시키로 로그인
+                    </button>
+                </form>
+
+                <!-- Certificate Login Form -->
+                <form id="cert-login-form" class="space-y-6 hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-blue-800 mb-1">공동인증서 로그인</h4>
+                                <p class="text-sm text-blue-700">
+                                    금융기관에서 발급받은 공동인증서(구 공인인증서)로 안전하게 로그인하세요.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-certificate mr-2"></i>인증서 선택
+                        </label>
+                        <input type="file" id="cert-file" accept=".der,.pfx,.p12" required
+                               class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-2">
+                            지원 형식: .der, .pfx, .p12
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">인증서 비밀번호</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+                            <input type="password" id="cert-password" required
+                                   class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="인증서 비밀번호">
+                        </div>
+                    </div>
+
+                    <div id="cert-error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
+                    <div id="cert-success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
+
+                    <button type="submit" id="cert-login-btn"
+                            class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                        <i class="fas fa-certificate mr-2"></i>공동인증서로 로그인
+                    </button>
+                </form>
+
                 <div class="mt-6 text-center">
                     <p class="text-gray-600">
                         계정이 없으신가요?
@@ -444,6 +526,31 @@ app.get('/login', (c) => {
         </div>
 
         <script>
+          // Tab switching
+          const tabEmail = document.getElementById('tab-email');
+          const tabHash = document.getElementById('tab-hash');
+          const tabCert = document.getElementById('tab-cert');
+          const emailForm = document.getElementById('login-form');
+          const hashForm = document.getElementById('hash-login-form');
+          const certForm = document.getElementById('cert-login-form');
+
+          function switchTab(activeTab, activeForm) {
+            [tabEmail, tabHash, tabCert].forEach(tab => {
+              tab.classList.remove('border-primary', 'text-primary');
+              tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+            activeTab.classList.add('border-primary', 'text-primary');
+
+            [emailForm, hashForm, certForm].forEach(form => form.classList.add('hidden'));
+            activeForm.classList.remove('hidden');
+          }
+
+          tabEmail.addEventListener('click', () => switchTab(tabEmail, emailForm));
+          tabHash.addEventListener('click', () => switchTab(tabHash, hashForm));
+          tabCert.addEventListener('click', () => switchTab(tabCert, certForm));
+
+          // Email login
           const form = document.getElementById('login-form');
           const errorMsg = document.getElementById('error-message');
           const successMsg = document.getElementById('success-message');
@@ -469,11 +576,9 @@ app.get('/login', (c) => {
               successMsg.textContent = response.data.message;
               successMsg.classList.remove('hidden');
 
-              // Store token in localStorage
               localStorage.setItem('token', response.data.token);
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
-              // Redirect to dashboard after 1 second
               setTimeout(() => {
                 window.location.href = '/dashboard';
               }, 1000);
@@ -485,6 +590,113 @@ app.get('/login', (c) => {
               
               loginBtn.disabled = false;
               loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>로그인';
+            }
+          });
+
+          // Hash key login
+          const hashLoginForm = document.getElementById('hash-login-form');
+          const hashErrorMsg = document.getElementById('hash-error-message');
+          const hashSuccessMsg = document.getElementById('hash-success-message');
+          const hashLoginBtn = document.getElementById('hash-login-btn');
+
+          hashLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const hashKey = document.getElementById('hash-key').value;
+
+            hashErrorMsg.classList.add('hidden');
+            hashSuccessMsg.classList.add('hidden');
+            hashLoginBtn.disabled = true;
+            hashLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>인증 중...';
+
+            try {
+              const response = await axios.post('/api/auth/login-hash', {
+                hash_key: hashKey
+              });
+
+              hashSuccessMsg.textContent = '해시키 인증 성공! 리디렉션 중...';
+              hashSuccessMsg.classList.remove('hidden');
+
+              localStorage.setItem('token', response.data.token);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 1000);
+
+            } catch (error) {
+              const message = error.response?.data?.error || '해시키 인증에 실패했습니다.';
+              hashErrorMsg.textContent = message;
+              hashErrorMsg.classList.remove('hidden');
+              
+              hashLoginBtn.disabled = false;
+              hashLoginBtn.innerHTML = '<i class="fas fa-key mr-2"></i>해시키로 로그인';
+            }
+          });
+
+          // Certificate login
+          const certLoginForm = document.getElementById('cert-login-form');
+          const certErrorMsg = document.getElementById('cert-error-message');
+          const certSuccessMsg = document.getElementById('cert-success-message');
+          const certLoginBtn = document.getElementById('cert-login-btn');
+
+          certLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const certFile = document.getElementById('cert-file').files[0];
+            const certPassword = document.getElementById('cert-password').value;
+
+            if (!certFile) {
+              certErrorMsg.textContent = '인증서 파일을 선택해주세요.';
+              certErrorMsg.classList.remove('hidden');
+              return;
+            }
+
+            certErrorMsg.classList.add('hidden');
+            certSuccessMsg.classList.add('hidden');
+            certLoginBtn.disabled = true;
+            certLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>인증서 검증 중...';
+
+            try {
+              const reader = new FileReader();
+              reader.onload = async (event) => {
+                const certData = event.target.result.split(',')[1]; // Get base64 data
+
+                try {
+                  const response = await axios.post('/api/auth/login-cert', {
+                    cert_data: certData,
+                    cert_password: certPassword,
+                    cert_filename: certFile.name
+                  });
+
+                  certSuccessMsg.textContent = '공동인증서 인증 성공! 리디렉션 중...';
+                  certSuccessMsg.classList.remove('hidden');
+
+                  localStorage.setItem('token', response.data.token);
+                  localStorage.setItem('user', JSON.stringify(response.data.user));
+
+                  setTimeout(() => {
+                    window.location.href = '/dashboard';
+                  }, 1000);
+
+                } catch (error) {
+                  const message = error.response?.data?.error || '공동인증서 인증에 실패했습니다.';
+                  certErrorMsg.textContent = message;
+                  certErrorMsg.classList.remove('hidden');
+                  
+                  certLoginBtn.disabled = false;
+                  certLoginBtn.innerHTML = '<i class="fas fa-certificate mr-2"></i>공동인증서로 로그인';
+                }
+              };
+
+              reader.readAsDataURL(certFile);
+
+            } catch (error) {
+              certErrorMsg.textContent = '인증서 파일을 읽는 중 오류가 발생했습니다.';
+              certErrorMsg.classList.remove('hidden');
+              
+              certLoginBtn.disabled = false;
+              certLoginBtn.innerHTML = '<i class="fas fa-certificate mr-2"></i>공동인증서로 로그인';
             }
           });
         </script>
