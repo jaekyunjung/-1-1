@@ -1,141 +1,178 @@
 # ShipShare - 블록체인 기반 선적권 거래 플랫폼
 
-## 프로젝트 개요
+## 📋 프로젝트 개요
 
-ShipShare는 해운/항공 롤오버 발생 시 실시간으로 대체 선박을 찾고 예약할 수 있는 혁신적인 플랫폼입니다.
+ShipShare는 해운/항공 롤오버 발생 시 실시간으로 대체 선박을 찾고 예약할 수 있는 혁신적인 플랫폼입니다. 블록체인 기술을 기반으로 투명하고 안전한 선박 예약 서비스를 제공합니다.
 
-### 주요 목표
-- 롤오버 발생 시 빠른 대체 선박 검색
-- 투명한 가격 비교 및 즉시 예약
-- 블록체인 기술 기반의 안전한 거래
+### 주요 특징
+- 🚢 **실시간 선박 검색**: 전 세계 선박 스케줄 실시간 조회
+- 💰 **가격 비교**: 여러 선사의 운임을 한눈에 비교
+- ⚡ **즉시 예약**: 클릭 한 번으로 간편한 선박 공간 예약
+- 🔐 **블록체인 보안**: 거래의 투명성과 보안 보장
+- 📊 **통계 분석**: 선박 이용 내역과 비용 관리
 
-## 기술 스택
+## 🌐 배포 URL
 
-### 프론트엔드
-- **HTML/CSS/JavaScript** - 순수 웹 기술
-- **TailwindCSS** - 유틸리티 기반 CSS 프레임워크
-- **Font Awesome** - 아이콘 라이브러리
-- **Axios** - HTTP 클라이언트
+### 개발 환경
+- **로컬 개발**: https://3000-iopwnq1nluxtoxto0kcl7-0e616f0a.sandbox.novita.ai
 
-### 백엔드
-- **Hono** - 경량 웹 프레임워크
-- **TypeScript** - 타입 안정성
-- **Cloudflare Workers** - 엣지 런타임
+### 프로덕션 (Cloudflare Pages)
+- 배포 예정
 
-### 데이터베이스
-- **Cloudflare D1** - 글로벌 분산 SQLite 데이터베이스
-- 로컬 개발: `.wrangler/state/v3/d1` (자동 생성)
+## 🎯 완료된 기능
 
-### 배포
-- **Cloudflare Pages** - 글로벌 CDN 배포
+### 1. 랜딩 페이지 ✅
+- 히어로 섹션 (그라데이션 배경)
+- 주요 기능 소개 (6개 기능 카드)
+- 이용 방법 (3단계 프로세스)
+- CTA 섹션
+- 반응형 네비게이션
 
-## 프로젝트 구조
-
-```
-webapp/
-├── src/
-│   ├── index.tsx           # 메인 애플리케이션 (모든 페이지 포함)
-│   ├── lib/
-│   │   ├── auth.ts         # 인증 유틸리티
-│   │   └── common-html.ts  # 공통 HTML 컴포넌트
-│   └── routes/
-│       ├── auth.ts         # 인증 API
-│       ├── vessels.ts      # 선박 검색 API
-│       └── bookings.ts     # 예약 관리 API
-├── migrations/
-│   └── 0001_initial_schema.sql  # 데이터베이스 스키마
-├── public/                 # 정적 파일
-├── seed.sql               # 테스트 데이터
-├── wrangler.jsonc         # Cloudflare 설정
-├── ecosystem.config.cjs   # PM2 설정
-└── package.json           # 프로젝트 의존성
-```
-
-## 데이터베이스 스키마
-
-### Users (사용자)
-- 화주 (shipper): 제조업체
-- 포워더 (forwarder): 중개업체
-- 선사 (carrier): 해운사
-
-### Vessels (선박)
-- 선박 정보, 스케줄, 가용 공간
-
-### Vessel Containers (컨테이너)
-- 컨테이너 타입별 가용 수량 및 가격
-- 지원 타입: 20GP, 40GP, 40HC, 45HC, Reefer
-
-### Bookings (예약)
-- 예약 정보, 상태 추적
-
-## 현재 구현된 기능
-
-### ✅ 1단계 완료 기능
-
-#### 메인 랜딩 페이지
-- 히어로 섹션 (가치 제안)
-- 주요 기능 소개
-- 이용 방법 안내
-- CTA 버튼 및 푸터
-
-#### 회원가입/로그인
-- 이메일/비밀번호 인증
+### 2. 사용자 인증 시스템 ✅
+**회원가입 페이지** (`/signup`)
+- 이메일, 비밀번호, 이름 입력
 - 역할 선택 (화주/포워더/선사)
-- JWT 기반 세션 관리
-- LocalStorage 토큰 저장
+- 회사명, 전화번호 (선택)
+- 실시간 유효성 검사
+- 비밀번호 확인 매칭
 
-#### 선박 검색
-- 필터링 (출발지, 도착지, 날짜, 컨테이너 타입)
-- 실시간 검색 결과
-- 가격 및 가용 공간 표시
-- 정렬 기능
+**로그인 페이지** (`/login`)
+- 이메일/비밀번호 입력
+- 로그인 상태 유지 옵션
+- 에러 메시지 표시
+- 소셜 로그인 버튼 (UI)
 
-#### 예약 시스템
-- 선박 선택 및 예약
-- 컨테이너 타입/수량 선택
-- 가격 자동 계산
-- 예약 확인서 발급
+**인증 API** (`/api/auth/*`)
+- `POST /api/auth/register` - 회원가입
+- `POST /api/auth/login` - 로그인
+- `POST /api/auth/logout` - 로그아웃
+- `GET /api/auth/me` - 현재 사용자 정보
 
-## API 엔드포인트
+### 3. 선박 검색 시스템 ✅
+**검색 페이지** (`/search`)
+- 출발지/도착지 검색
+- 날짜 필터
+- 컨테이너 타입 필터
+- 가격 정렬 (낮은/높은 순)
+- 선박 카드 목록 표시
+- 즉시 예약 기능
 
-### 인증 API (`/api/auth`)
-- `POST /register` - 회원가입
-- `POST /login` - 로그인
-- `POST /logout` - 로그아웃
-- `GET /me` - 현재 사용자 정보
+**선박 API** (`/api/vessels/*`)
+- `GET /api/vessels` - 전체 선박 목록
+- `GET /api/vessels/search` - 조건별 검색
+- `GET /api/vessels/:id` - 선박 상세 정보
 
-### 선박 API (`/api/vessels`)
-- `GET /search` - 선박 검색 (쿼리 파라미터)
-- `GET /` - 모든 선박 목록
-- `GET /:id` - 선박 상세 정보
+### 4. 예약 관리 시스템 ✅
+**예약 API** (`/api/bookings/*`)
+- `POST /api/bookings` - 예약 생성
+- `GET /api/bookings/user/:userId` - 사용자 예약 목록
+- `GET /api/bookings/:reference` - 예약 상세 조회
+- `PATCH /api/bookings/:reference/cancel` - 예약 취소
 
-### 예약 API (`/api/bookings`)
-- `POST /` - 예약 생성
-- `GET /user/:userId` - 사용자 예약 목록
-- `GET /:reference` - 예약 상세 정보
-- `PATCH /:reference/cancel` - 예약 취소
+### 5. 사용자 대시보드 ✅
+**대시보드 페이지** (`/dashboard`)
+- 통계 카드 (총 예약, 진행 중, 확정, 총 비용)
+- 최근 예약 목록
+- 빠른 실행 메뉴
+- 도움말 섹션
+- 예약 취소 기능
 
-## 로컬 개발 가이드
+## 🗄️ 데이터베이스 스키마
 
-### 1. 프로젝트 설정
+### Users 테이블
+```sql
+- id: INTEGER (PK, AUTOINCREMENT)
+- email: TEXT (UNIQUE, NOT NULL)
+- password_hash: TEXT (NOT NULL)
+- name: TEXT (NOT NULL)
+- company: TEXT
+- role: TEXT (shipper/forwarder/carrier)
+- phone: TEXT
+- created_at: DATETIME
+- updated_at: DATETIME
+```
 
+### Vessels 테이블
+```sql
+- id: INTEGER (PK, AUTOINCREMENT)
+- vessel_name: TEXT (NOT NULL)
+- carrier_name: TEXT (NOT NULL)
+- vessel_type: TEXT (container/bulk/tanker/roro)
+- capacity: INTEGER (NOT NULL)
+- departure_port: TEXT (NOT NULL)
+- arrival_port: TEXT (NOT NULL)
+- departure_date: TEXT (NOT NULL)
+- arrival_date: TEXT (NOT NULL)
+- available_space: INTEGER (NOT NULL)
+- price_per_teu: REAL (NOT NULL)
+- status: TEXT (available/full/departed/cancelled)
+- created_at: DATETIME
+- updated_at: DATETIME
+```
+
+### Vessel Containers 테이블
+```sql
+- id: INTEGER (PK, AUTOINCREMENT)
+- vessel_id: INTEGER (FK)
+- container_type: TEXT (20GP/40GP/40HC/45HC/reefer)
+- available_quantity: INTEGER (NOT NULL)
+- price_per_unit: REAL (NOT NULL)
+```
+
+### Bookings 테이블
+```sql
+- id: INTEGER (PK, AUTOINCREMENT)
+- user_id: INTEGER (FK)
+- vessel_id: INTEGER (FK)
+- container_type: TEXT (NOT NULL)
+- quantity: INTEGER (NOT NULL)
+- total_price: REAL (NOT NULL)
+- status: TEXT (pending/confirmed/cancelled/completed)
+- booking_reference: TEXT (UNIQUE)
+- notes: TEXT
+- created_at: DATETIME
+- updated_at: DATETIME
+```
+
+## 🛠️ 기술 스택
+
+### Frontend
+- **HTML/CSS**: 반응형 UI
+- **Tailwind CSS**: 유틸리티 기반 스타일링
+- **JavaScript**: Vanilla JS (Axios로 API 통신)
+- **Font Awesome**: 아이콘
+
+### Backend
+- **Hono**: 경량 웹 프레임워크
+- **TypeScript**: 타입 안전성
+- **Cloudflare Workers**: Edge 런타임
+
+### Database
+- **Cloudflare D1**: SQLite 기반 분산 데이터베이스
+
+### DevOps
+- **Wrangler**: Cloudflare CLI
+- **PM2**: 프로세스 관리 (개발 환경)
+- **Vite**: 빌드 도구
+
+## 🚀 로컬 개발 환경 설정
+
+### 1. 의존성 설치
 ```bash
 cd /home/user/webapp
 npm install
 ```
 
 ### 2. 데이터베이스 초기화
-
 ```bash
 # 마이그레이션 실행
 npm run db:migrate:local
 
-# 테스트 데이터 추가
+# 테스트 데이터 삽입
 npm run db:seed
 ```
 
-### 3. 개발 서버 실행
-
+### 3. 개발 서버 시작
 ```bash
 # 빌드
 npm run build
@@ -143,152 +180,115 @@ npm run build
 # PM2로 서버 시작
 pm2 start ecosystem.config.cjs
 
-# 서버 확인
+# 또는 직접 실행
+npm run dev:sandbox
+```
+
+### 4. 테스트
+```bash
+# 서비스 확인
 curl http://localhost:3000
+
+# API 테스트
+curl http://localhost:3000/api/vessels
 ```
 
-### 4. 데이터베이스 관리
+## 📝 테스트 계정
 
-```bash
-# 로컬 DB 콘솔 접속
-npm run db:console:local
+### 화주 계정
+- **이메일**: shipper@example.com
+- **비밀번호**: password123
+- **역할**: 화주 (Shipper)
 
-# 데이터베이스 리셋 (모든 데이터 삭제 후 재생성)
-npm run db:reset
-```
+### 포워더 계정
+- **이메일**: forwarder@example.com
+- **비밀번호**: password123
+- **역할**: 포워더 (Forwarder)
 
-### 5. 유용한 명령어
+### 선사 계정
+- **이메일**: carrier@example.com
+- **비밀번호**: password123
+- **역할**: 선사 (Carrier)
 
-```bash
-# PM2 상태 확인
-pm2 list
-
-# 로그 확인 (비차단)
-pm2 logs --nostream
-
-# 서버 재시작
-pm2 restart shipshare
-
-# 포트 정리
-npm run clean-port
-
-# 빌드 & 재시작 (변경사항 반영)
-npm run build && pm2 restart shipshare
-```
-
-## 테스트 계정
-
-시스템에 사전 등록된 테스트 계정:
+## 📂 프로젝트 구조
 
 ```
-화주 계정:
-Email: shipper@example.com
-Password: password123
-
-포워더 계정:
-Email: forwarder@example.com
-Password: password123
-
-선사 계정:
-Email: carrier@example.com
-Password: password123
+webapp/
+├── src/
+│   ├── index.tsx          # 메인 애플리케이션 (페이지 라우팅)
+│   ├── lib/
+│   │   └── auth.ts        # 인증 유틸리티
+│   └── routes/
+│       ├── auth.ts        # 인증 API
+│       ├── vessels.ts     # 선박 API
+│       └── bookings.ts    # 예약 API
+├── migrations/
+│   └── 0001_initial_schema.sql  # 데이터베이스 스키마
+├── seed.sql               # 테스트 데이터
+├── public/
+│   └── static/            # 정적 파일
+├── wrangler.jsonc         # Cloudflare 설정
+├── package.json           # 의존성 및 스크립트
+├── ecosystem.config.cjs   # PM2 설정
+└── README.md             # 프로젝트 문서
 ```
 
-## 샘플 데이터
+## 🎨 디자인 시스템
 
-데이터베이스에는 다음 테스트 데이터가 포함되어 있습니다:
+### 색상 팔레트
+- **Primary**: #667eea (보라색)
+- **Secondary**: #764ba2 (진보라색)
+- **Success**: #10b981 (녹색)
+- **Warning**: #f59e0b (주황색)
+- **Danger**: #ef4444 (빨간색)
 
-### 선박 5척
-1. PACIFIC GLORY (부산 → 로스앤젤레스)
-2. ASIA EXPRESS (부산 → 로테르담)
-3. OCEAN STAR (인천 → 함부르크)
-4. KOREAN PRIDE (부산 → 싱가포르)
-5. TRANS PACIFIC (부산 → 뉴욕)
-
-### 각 선박별 컨테이너 타입 및 가격 정보 제공
-
-## 배포 (Cloudflare Pages)
-
-### 준비 사항
-1. Cloudflare 계정
-2. Cloudflare API 토큰
-
-### 배포 절차
-
-```bash
-# 1. API 키 설정
-# setup_cloudflare_api_key 함수 호출
-
-# 2. 프로덕션 D1 데이터베이스 생성
-npx wrangler d1 create shipshare-production
-
-# 3. wrangler.jsonc에 database_id 업데이트
-
-# 4. 프로덕션 마이그레이션
-npm run db:migrate:prod
-
-# 5. Cloudflare Pages 프로젝트 생성
-npx wrangler pages project create shipshare --production-branch main
-
-# 6. 배포
-npm run deploy:prod
+### 그라데이션
+```css
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 ```
 
-### 배포 URL
-- Production: `https://shipshare.pages.dev`
-- Branch: `https://main.shipshare.pages.dev`
+## 🔜 향후 개발 계획
 
-## 현재 상태
+### 단기 (1-2주)
+- [ ] 사용자 프로필 페이지
+- [ ] 예약 상세 페이지
+- [ ] 결제 시스템 통합
+- [ ] 이메일 알림
 
-### ✅ 완료된 기능
-- 메인 랜딩 페이지
-- 회원가입/로그인 시스템
-- 선박 검색 기능
-- 예약 시스템
-- D1 데이터베이스 통합
-- 로컬 개발 환경 구축
+### 중기 (1-2개월)
+- [ ] 실시간 채팅 지원
+- [ ] 블록체인 스마트 컨트랙트 통합
+- [ ] 모바일 앱 (React Native)
+- [ ] 관리자 대시보드
 
-### 🚧 진행 중 / 향후 계획
-- 사용자 대시보드 (예약 내역, 통계)
-- 블록체인 통합 (스마트 컨트랙트)
-- 실시간 알림 시스템
-- 결제 시스템 통합
-- 모바일 앱 개발
-- 선사 대시보드 (선박 등록)
-- 관리자 패널
+### 장기 (3-6개월)
+- [ ] AI 기반 선박 추천
+- [ ] 자동 롤오버 감지 및 알림
+- [ ] 다국어 지원
+- [ ] API 마켓플레이스
 
-## 프로젝트 특징
+## 🐛 알려진 이슈
 
-### 1. 모던 아키텍처
-- 엣지 컴퓨팅 (Cloudflare Workers)
-- 글로벌 분산 데이터베이스 (D1)
-- 서버리스 아키텍처
+1. 비밀번호 해싱이 간소화되어 있음 (프로덕션에서는 bcrypt 사용 필요)
+2. JWT 토큰이 localStorage에 저장됨 (HttpOnly 쿠키 사용 권장)
+3. 실제 블록체인 통합은 아직 미구현 상태
 
-### 2. 개발자 친화적
-- TypeScript 타입 안정성
-- Hot reload 지원
-- 로컬 개발 환경 (--local 모드)
-
-### 3. 확장 가능
-- RESTful API 설계
-- 모듈화된 라우트 구조
-- 마이그레이션 기반 DB 관리
-
-## 라이선스
+## 📄 라이선스
 
 MIT License
 
-## 개발자
+## 👥 개발팀
 
-ShipShare 개발팀
+- **프로젝트 관리**: ShipShare Team
+- **개발**: AI Assistant
+- **문의**: support@shipshare.com
 
-## 문의
+## 🙏 기여하기
 
-- 이메일: support@shipshare.com
-- 전화: 02-1234-5678
+이슈나 PR을 환영합니다! 기여 가이드라인을 확인해주세요.
 
 ---
 
-**Last Updated**: 2025-11-21
-**Version**: 1.0.0
-**Status**: ✅ Active (Local Development)
+**마지막 업데이트**: 2025-11-21
+**버전**: 1.0.0
+**상태**: 개발 진행 중 🚧
