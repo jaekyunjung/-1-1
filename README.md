@@ -372,22 +372,47 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 ## 🔗 블록체인 기능 상세
 
+**📖 자세한 내용은 [블록체인 활용 설명서](./BLOCKCHAIN_EXPLANATION.md)를 참조하세요!**
+
 ### 1. 거래 기록
-- 예약 생성 시 자동으로 블록체인 거래 생성
-- 트랜잭션 해시: `0x{timestamp}{random}`
-- 블록 번호: 1,000,000 ~ 2,000,000 랜덤
-- 가스 사용량: 21,000 ~ 121,000 랜덤
+- **자동 발생**: 예약 생성 시 자동으로 블록체인 거래 생성
+- **트랜잭션 해시**: `0x{timestamp}{random}` 형식
+- **블록 번호**: 1,000,000 ~ 2,000,000 범위
+- **가스 사용량**: 21,000 ~ 121,000 시뮬레이션
 
 ### 2. 스마트 계약
-- 예약 시 자동 배포
-- 계약 주소: `0xContract{timestamp}{random}`
-- 계약 조건: JSON 형태로 저장
-- 상태: deployed → executed → cancelled
+- **자동 배포**: 예약 시 스마트 계약 자동 생성
+- **계약 주소**: `0xContract{timestamp}{random}`
+- **계약 조건**: JSON 형태로 저장 (예약 정보, 가격, 조건)
+- **상태 관리**: deployed → executed → cancelled
 
-### 3. 투명성
-- 모든 거래는 블록체인 탐색기에서 조회 가능
-- 거래 내역은 변조 불가능
-- 스마트 계약으로 자동 실행 보장
+### 3. 투명성 및 검증
+- **블록체인 탐색기**: `/blockchain` 페이지에서 모든 거래 조회 가능
+- **거래 검증**: 트랜잭션 해시로 거래 상세 정보 확인
+- **변조 불가**: 한번 기록된 거래는 수정/삭제 불가능
+- **스마트 계약**: 조건 충족 시 자동 실행 보장
+
+### 4. 실제 사용 예시
+```javascript
+// 예약 생성 시 자동으로 블록체인 거래 생성
+POST /api/bookings
+
+// 응답
+{
+  "success": true,
+  "booking": { ... },
+  "blockchain": {
+    "transaction_hash": "0x1a2b3c4d5e6f",
+    "block_number": 1234567,
+    "contract_address": "0xContract789abc"
+  }
+}
+```
+
+### 5. 확인 방법
+- **블록체인 탐색기**: https://your-domain/blockchain
+- **API 조회**: `GET /api/blockchain/transaction/:hash`
+- **통계 대시보드**: `GET /api/blockchain/stats`
 
 ## 🔜 향후 개발 계획
 
