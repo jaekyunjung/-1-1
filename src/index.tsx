@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
+import auth from './routes/auth'
 
 type Bindings = {
   DB: D1Database;
@@ -13,6 +14,9 @@ app.use('/api/*', cors())
 
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }))
+
+// Mount API routes
+app.route('/api/auth', auth)
 
 // Landing page
 app.get('/', (c) => {
@@ -329,6 +333,395 @@ app.get('/', (c) => {
   `)
 })
 
-// API Routes will be added here
+// Login page
+app.get('/login', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>로그인 - ShipShare</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                colors: {
+                  primary: '#667eea',
+                  secondary: '#764ba2',
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+        </style>
+    </head>
+    <body class="gradient-bg min-h-screen flex items-center justify-center px-4">
+        <div class="max-w-md w-full">
+            <div class="text-center mb-8">
+                <a href="/" class="inline-flex items-center text-white text-3xl font-bold mb-4">
+                    <i class="fas fa-ship mr-3"></i>
+                    ShipShare
+                </a>
+                <p class="text-white text-lg">계정에 로그인하세요</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이메일</label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
+                            <input type="email" id="email" required
+                                   class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="your@email.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+                            <input type="password" id="password" required
+                                   class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-sm text-gray-600">로그인 상태 유지</span>
+                        </label>
+                        <a href="/forgot-password" class="text-sm text-primary hover:text-secondary">비밀번호 찾기</a>
+                    </div>
+
+                    <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
+                    <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
+
+                    <button type="submit" id="login-btn"
+                            class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>로그인
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        계정이 없으신가요?
+                        <a href="/signup" class="text-primary font-bold hover:text-secondary">회원가입</a>
+                    </p>
+                </div>
+
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">또는</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 gap-3">
+                        <button class="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                            <i class="fab fa-google text-red-500 mr-2"></i>
+                            Google
+                        </button>
+                        <button class="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                            <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                            Facebook
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+          const form = document.getElementById('login-form');
+          const errorMsg = document.getElementById('error-message');
+          const successMsg = document.getElementById('success-message');
+          const loginBtn = document.getElementById('login-btn');
+
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>로그인 중...';
+
+            try {
+              const response = await axios.post('/api/auth/login', {
+                email,
+                password
+              });
+
+              successMsg.textContent = response.data.message;
+              successMsg.classList.remove('hidden');
+
+              // Store token in localStorage
+              localStorage.setItem('token', response.data.token);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+
+              // Redirect to dashboard after 1 second
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 1000);
+
+            } catch (error) {
+              const message = error.response?.data?.error || '로그인 중 오류가 발생했습니다.';
+              errorMsg.textContent = message;
+              errorMsg.classList.remove('hidden');
+              
+              loginBtn.disabled = false;
+              loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>로그인';
+            }
+          });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// Signup page
+app.get('/signup', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>회원가입 - ShipShare</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                colors: {
+                  primary: '#667eea',
+                  secondary: '#764ba2',
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+        </style>
+    </head>
+    <body class="gradient-bg min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="max-w-2xl w-full">
+            <div class="text-center mb-8">
+                <a href="/" class="inline-flex items-center text-white text-3xl font-bold mb-4">
+                    <i class="fas fa-ship mr-3"></i>
+                    ShipShare
+                </a>
+                <p class="text-white text-lg">새 계정을 만드세요</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <form id="signup-form" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
+                            <input type="email" id="email" required
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="your@email.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">이름 *</label>
+                            <input type="text" id="name" required
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="홍길동">
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">비밀번호 *</label>
+                            <input type="password" id="password" required
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="최소 8자 이상">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">비밀번호 확인 *</label>
+                            <input type="password" id="confirm-password" required
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="비밀번호 재입력">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">역할 선택 *</label>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <label class="flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer hover:border-primary transition">
+                                <input type="radio" name="role" value="shipper" required class="mb-2">
+                                <i class="fas fa-industry text-primary text-3xl mb-2"></i>
+                                <span class="font-bold">화주</span>
+                                <span class="text-xs text-gray-500 text-center">제조업체</span>
+                            </label>
+                            <label class="flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer hover:border-primary transition">
+                                <input type="radio" name="role" value="forwarder" required class="mb-2">
+                                <i class="fas fa-truck text-primary text-3xl mb-2"></i>
+                                <span class="font-bold">포워더</span>
+                                <span class="text-xs text-gray-500 text-center">중개업체</span>
+                            </label>
+                            <label class="flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer hover:border-primary transition">
+                                <input type="radio" name="role" value="carrier" required class="mb-2">
+                                <i class="fas fa-ship text-primary text-3xl mb-2"></i>
+                                <span class="font-bold">선사</span>
+                                <span class="text-xs text-gray-500 text-center">해운사</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">회사명</label>
+                            <input type="text" id="company"
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="회사명 (선택)">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
+                            <input type="tel" id="phone"
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="010-1234-5678">
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <input type="checkbox" id="terms" required class="mt-1 rounded border-gray-300 text-primary focus:ring-primary">
+                        <label for="terms" class="ml-2 text-sm text-gray-600">
+                            <a href="/terms" class="text-primary hover:text-secondary">이용약관</a> 및 
+                            <a href="/privacy" class="text-primary hover:text-secondary">개인정보처리방침</a>에 동의합니다. *
+                        </label>
+                    </div>
+
+                    <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
+                    <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
+
+                    <button type="submit" id="signup-btn"
+                            class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                        <i class="fas fa-user-plus mr-2"></i>회원가입
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        이미 계정이 있으신가요?
+                        <a href="/login" class="text-primary font-bold hover:text-secondary">로그인</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+          const form = document.getElementById('signup-form');
+          const errorMsg = document.getElementById('error-message');
+          const successMsg = document.getElementById('success-message');
+          const signupBtn = document.getElementById('signup-btn');
+
+          // Style selected role
+          document.querySelectorAll('input[name="role"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+              document.querySelectorAll('input[name="role"]').forEach(r => {
+                r.parentElement.classList.remove('border-primary', 'bg-primary', 'bg-opacity-5');
+              });
+              if (e.target.checked) {
+                e.target.parentElement.classList.add('border-primary', 'bg-primary', 'bg-opacity-5');
+              }
+            });
+          });
+
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const name = document.getElementById('name').value;
+            const role = document.querySelector('input[name="role"]:checked')?.value;
+            const company = document.getElementById('company').value;
+            const phone = document.getElementById('phone').value;
+
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+
+            // Validation
+            if (password !== confirmPassword) {
+              errorMsg.textContent = '비밀번호가 일치하지 않습니다.';
+              errorMsg.classList.remove('hidden');
+              return;
+            }
+
+            if (password.length < 8) {
+              errorMsg.textContent = '비밀번호는 최소 8자 이상이어야 합니다.';
+              errorMsg.classList.remove('hidden');
+              return;
+            }
+
+            if (!role) {
+              errorMsg.textContent = '역할을 선택해주세요.';
+              errorMsg.classList.remove('hidden');
+              return;
+            }
+
+            signupBtn.disabled = true;
+            signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>회원가입 중...';
+
+            try {
+              const response = await axios.post('/api/auth/register', {
+                email,
+                password,
+                name,
+                role,
+                company: company || undefined,
+                phone: phone || undefined
+              });
+
+              successMsg.textContent = response.data.message;
+              successMsg.classList.remove('hidden');
+
+              // Store token in localStorage
+              localStorage.setItem('token', response.data.token);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+
+              // Redirect to dashboard after 2 seconds
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 2000);
+
+            } catch (error) {
+              const message = error.response?.data?.error || '회원가입 중 오류가 발생했습니다.';
+              errorMsg.textContent = message;
+              errorMsg.classList.remove('hidden');
+              
+              signupBtn.disabled = false;
+              signupBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>회원가입';
+            }
+          });
+        </script>
+    </body>
+    </html>
+  `)
+})
 
 export default app
