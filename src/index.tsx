@@ -7,6 +7,7 @@ import bookings from './routes/bookings'
 import blockchain from './routes/blockchain'
 import ai from './routes/ai'
 import pages from './routes/pages'
+import login from './routes/login'
 
 type Bindings = {
   DB: D1Database;
@@ -29,6 +30,7 @@ app.route('/api/ai', ai)
 
 // Mount page routes
 app.route('/', pages)
+app.route('/', login)
 
 // Landing page
 app.get('/', (c) => {
