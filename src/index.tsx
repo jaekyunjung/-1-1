@@ -1786,7 +1786,7 @@ app.get('/booking/new', (c) => {
   `)
 })
 
-// Dashboard page
+// Dashboard page (Role-based)
 app.get('/dashboard', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -1815,145 +1815,191 @@ app.get('/dashboard', (c) => {
           .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           }
+          .sidebar {
+            width: 250px;
+            transition: transform 0.3s;
+          }
+          @media (max-width: 768px) {
+            .sidebar {
+              transform: translateX(-100%);
+              position: fixed;
+              height: 100vh;
+              z-index: 40;
+            }
+            .sidebar.open {
+              transform: translateX(0);
+            }
+          }
         </style>
     </head>
     <body class="bg-gray-50">
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center">
-                        <a href="/" class="flex items-center">
-                            <i class="fas fa-ship text-primary text-2xl mr-3"></i>
-                            <span class="text-2xl font-bold text-gray-800">ShipShare</span>
-                        </a>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span id="user-name" class="text-gray-600"></span>
-                        <span id="user-role" class="px-3 py-1 bg-primary bg-opacity-10 text-primary rounded-full text-sm font-medium"></span>
-                        <button onclick="logout()" class="text-gray-600 hover:text-red-600 transition">
-                            <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Page Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">대시보드</h1>
-                <p class="text-gray-600">선박 예약 현황과 통계를 확인하세요</p>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="grid md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">총 예약</p>
-                            <p id="stat-total" class="text-3xl font-bold text-gray-800">0</p>
-                        </div>
-                        <div class="bg-primary bg-opacity-10 w-12 h-12 rounded-full flex items-center justify-center">
-                            <i class="fas fa-calendar-check text-primary text-xl"></i>
-                        </div>
-                    </div>
+        <div class="flex h-screen">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar bg-white shadow-lg">
+                <div class="p-6 border-b">
+                    <a href="/" class="flex items-center">
+                        <i class="fas fa-ship text-primary text-2xl mr-3"></i>
+                        <span class="text-xl font-bold text-gray-800">ShipShare</span>
+                    </a>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">진행 중</p>
-                            <p id="stat-pending" class="text-3xl font-bold text-yellow-600">0</p>
-                        </div>
-                        <div class="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
+                <nav class="p-4">
+                    <a href="/dashboard" class="flex items-center px-4 py-3 mb-2 bg-primary bg-opacity-10 text-primary rounded-lg">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        대시보드
+                    </a>
+                    <a href="/search" class="flex items-center px-4 py-3 mb-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-search mr-3"></i>
+                        선박 검색
+                    </a>
+                    <a href="/bookings" class="flex items-center px-4 py-3 mb-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-list mr-3"></i>
+                        예약 내역
+                    </a>
+                    <a href="/profile" class="flex items-center px-4 py-3 mb-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-user mr-3"></i>
+                        프로필
+                    </a>
+                </nav>
 
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">확정</p>
-                            <p id="stat-confirmed" class="text-3xl font-bold text-green-600">0</p>
-                        </div>
-                        <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                    </div>
+                <div class="absolute bottom-0 w-full p-4 border-t">
+                    <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt mr-3"></i>
+                        로그아웃
+                    </button>
                 </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">총 비용</p>
-                            <p id="stat-cost" class="text-2xl font-bold text-gray-800">$0</p>
-                        </div>
-                        <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-blue-600 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </aside>
 
             <!-- Main Content -->
-            <div class="grid lg:grid-cols-3 gap-8">
-                <!-- Recent Bookings -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-bold text-gray-800">최근 예약</h2>
-                            <a href="/search" class="text-primary hover:text-secondary font-medium">
-                                <i class="fas fa-plus mr-2"></i>새 예약
-                            </a>
+            <div class="flex-1 overflow-auto">
+                <!-- Top Bar -->
+                <header class="bg-white shadow-sm">
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <div class="flex items-center">
+                            <button onclick="toggleSidebar()" class="md:hidden mr-4 text-gray-600">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <h1 class="text-2xl font-bold text-gray-800">대시보드</h1>
                         </div>
-
-                        <div id="bookings-list" class="space-y-4">
-                            <div class="text-center py-8 text-gray-500">
-                                <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
-                                <p>예약 목록을 불러오는 중...</p>
+                        <div class="flex items-center space-x-4">
+                            <button class="relative text-gray-600 hover:text-primary transition">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                            </button>
+                            <div class="flex items-center space-x-3">
+                                <div class="text-right">
+                                    <p id="user-name" class="text-sm font-medium text-gray-800"></p>
+                                    <p id="user-role" class="text-xs text-gray-500"></p>
+                                </div>
+                                <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </header>
 
-                <!-- Quick Actions & Info -->
-                <div class="space-y-6">
-                    <!-- Quick Actions -->
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">빠른 실행</h3>
-                        <div class="space-y-3">
-                            <a href="/search" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 transition">
-                                <i class="fas fa-search text-primary text-xl mr-3"></i>
-                                <span class="font-medium">선박 검색</span>
-                            </a>
-                            <a href="/bookings" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 transition">
-                                <i class="fas fa-list text-primary text-xl mr-3"></i>
-                                <span class="font-medium">예약 내역</span>
-                            </a>
-                            <a href="/profile" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 transition">
-                                <i class="fas fa-user text-primary text-xl mr-3"></i>
-                                <span class="font-medium">프로필 설정</span>
-                            </a>
+                <!-- Dashboard Content -->
+                <main class="p-6">
+                    <!-- Stats Cards -->
+                    <div id="stats-cards" class="grid md:grid-cols-4 gap-6 mb-8">
+                        <!-- Cards will be loaded dynamically -->
+                    </div>
+
+                    <div class="grid lg:grid-cols-3 gap-6">
+                        <!-- Main Content Area -->
+                        <div class="lg:col-span-2">
+                            <!-- Chart -->
+                            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">예약 추이</h3>
+                                <canvas id="bookingChart" height="100"></canvas>
+                            </div>
+
+                            <!-- Recent Bookings -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-bold text-gray-800">최근 예약 내역</h3>
+                                    <a href="/bookings" class="text-primary hover:text-secondary text-sm font-medium">
+                                        전체보기 <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+
+                                <div id="bookings-table" class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="border-b">
+                                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">예약번호</th>
+                                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">선박명</th>
+                                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">출발일</th>
+                                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">상태</th>
+                                                <th class="text-right py-3 px-4 text-sm font-medium text-gray-600">금액</th>
+                                                <th class="text-center py-3 px-4 text-sm font-medium text-gray-600">액션</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bookings-tbody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-8">
+                                                    <i class="fas fa-spinner fa-spin text-primary text-2xl mb-2"></i>
+                                                    <p class="text-gray-500">데이터 로딩 중...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div id="pagination" class="flex items-center justify-between mt-6 pt-6 border-t">
+                                    <p class="text-sm text-gray-600">
+                                        <span id="page-info">1-10 of 0 items</span>
+                                    </p>
+                                    <div class="flex gap-2">
+                                        <button onclick="prevPage()" class="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50" disabled>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button onclick="nextPage()" class="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50" disabled>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Sidebar -->
+                        <div class="space-y-6">
+                            <!-- Quick Actions -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">빠른 실행</h3>
+                                <div id="quick-actions" class="space-y-3">
+                                    <!-- Actions will be loaded dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Help Card -->
+                            <div class="gradient-bg rounded-xl shadow-sm p-6 text-white">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-headset text-3xl mr-3"></i>
+                                    <h3 class="text-lg font-bold">도움이 필요하신가요?</h3>
+                                </div>
+                                <p class="text-sm mb-4 text-gray-100">
+                                    고객 지원팀이 24/7 대기 중입니다.
+                                </p>
+                                <button class="w-full bg-white text-primary py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                                    문의하기
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Help & Support -->
-                    <div class="gradient-bg rounded-xl shadow-sm p-6 text-white">
-                        <h3 class="text-lg font-bold mb-4">도움이 필요하신가요?</h3>
-                        <p class="mb-4 text-sm text-gray-100">
-                            ShipShare 팀이 언제든 도와드립니다.
-                        </p>
-                        <button class="w-full bg-white text-primary py-2 rounded-lg font-medium hover:bg-gray-100 transition">
-                            <i class="fas fa-headset mr-2"></i>고객 지원
-                        </button>
-                    </div>
-                </div>
+                </main>
             </div>
         </div>
 
         <script>
+          let currentPage = 1;
+          const itemsPerPage = 10;
+          let totalBookings = 0;
+          let allBookings = [];
+          let chart = null;
+
           // Check authentication
           const token = localStorage.getItem('token');
           const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1971,6 +2017,11 @@ app.get('/dashboard', (c) => {
           };
           document.getElementById('user-role').textContent = roleMap[user.role] || user.role;
 
+          // Sidebar toggle for mobile
+          function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+          }
+
           // Logout function
           function logout() {
             localStorage.removeItem('token');
@@ -1978,112 +2029,316 @@ app.get('/dashboard', (c) => {
             window.location.href = '/login';
           }
 
-          // Load bookings
-          async function loadBookings() {
+          // Load dashboard data based on role
+          async function loadDashboard() {
             try {
               const response = await axios.get(\`/api/bookings/user/\${user.id}\`, {
-                headers: {
-                  'Authorization': \`Bearer \${token}\`
-                }
+                headers: { 'Authorization': \`Bearer \${token}\` }
               });
 
-              const bookings = response.data.bookings || [];
-              
-              // Update stats
-              document.getElementById('stat-total').textContent = bookings.length;
-              
-              const pending = bookings.filter(b => b.status === 'pending').length;
-              const confirmed = bookings.filter(b => b.status === 'confirmed').length;
-              const totalCost = bookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
-              
-              document.getElementById('stat-pending').textContent = pending;
-              document.getElementById('stat-confirmed').textContent = confirmed;
-              document.getElementById('stat-cost').textContent = \`$\${totalCost.toLocaleString()}\`;
+              allBookings = response.data.bookings || [];
+              totalBookings = allBookings.length;
 
-              // Display bookings
-              const bookingsList = document.getElementById('bookings-list');
-              
-              if (bookings.length === 0) {
-                bookingsList.innerHTML = \`
-                  <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-4"></i>
-                    <p class="mb-4">아직 예약이 없습니다</p>
-                    <a href="/search" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition">
-                      첫 예약 만들기
-                    </a>
-                  </div>
-                \`;
-                return;
+              if (user.role === 'shipper') {
+                loadShipperDashboard();
+              } else if (user.role === 'forwarder') {
+                loadForwarderDashboard();
+              } else {
+                loadShipperDashboard(); // Default
               }
 
-              bookingsList.innerHTML = bookings.slice(0, 5).map(booking => {
-                const statusColors = {
-                  pending: 'bg-yellow-100 text-yellow-800',
-                  confirmed: 'bg-green-100 text-green-800',
-                  cancelled: 'bg-red-100 text-red-800',
-                  completed: 'bg-blue-100 text-blue-800'
-                };
-                
-                const statusLabels = {
-                  pending: '대기 중',
-                  confirmed: '확정',
-                  cancelled: '취소됨',
-                  completed: '완료'
-                };
-
-                return \`
-                  <div class="border rounded-lg p-4 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-3">
-                      <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-2">
-                          <h3 class="font-bold text-gray-800">\${booking.vessel_name}</h3>
-                          <span class="px-2 py-1 rounded text-xs \${statusColors[booking.status] || 'bg-gray-100 text-gray-800'}">
-                            \${statusLabels[booking.status] || booking.status}
-                          </span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-1">
-                          <i class="fas fa-building mr-2"></i>\${booking.carrier_name}
-                        </p>
-                        <p class="text-sm text-gray-600">
-                          <i class="fas fa-route mr-2"></i>
-                          \${booking.departure_port} → \${booking.arrival_port}
-                        </p>
-                      </div>
-                      <div class="text-right">
-                        <p class="text-lg font-bold text-primary">$\${booking.total_price.toLocaleString()}</p>
-                        <p class="text-xs text-gray-500">\${booking.container_type} x \${booking.quantity}</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-3 border-t">
-                      <div class="text-xs text-gray-500">
-                        <i class="fas fa-calendar mr-1"></i>
-                        출발: \${new Date(booking.departure_date).toLocaleDateString('ko-KR')}
-                      </div>
-                      <div class="flex gap-2">
-                        <button onclick="viewBooking('\${booking.booking_reference}')" 
-                                class="text-xs text-primary hover:text-secondary">
-                          <i class="fas fa-eye mr-1"></i>상세보기
-                        </button>
-                        \${booking.status === 'pending' ? \`
-                          <button onclick="cancelBooking('\${booking.booking_reference}')" 
-                                  class="text-xs text-red-600 hover:text-red-800">
-                            <i class="fas fa-times mr-1"></i>취소
-                          </button>
-                        \` : ''}
-                      </div>
-                    </div>
-                  </div>
-                \`;
-              }).join('');
-
             } catch (error) {
-              console.error('Load bookings error:', error);
-              document.getElementById('bookings-list').innerHTML = \`
-                <div class="text-center py-8 text-red-500">
-                  <i class="fas fa-exclamation-circle text-3xl mb-4"></i>
-                  <p>예약 목록을 불러오지 못했습니다.</p>
+              console.error('Load dashboard error:', error);
+            }
+          }
+
+          // Shipper Dashboard
+          function loadShipperDashboard() {
+            const pending = allBookings.filter(b => b.status === 'pending').length;
+            const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
+            const completed = allBookings.filter(b => b.status === 'completed').length;
+            const totalCost = allBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+            // Stats Cards
+            document.getElementById('stats-cards').innerHTML = \`
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">총 예약 건수</p>
+                    <p class="text-3xl font-bold text-gray-800">\${totalBookings}</p>
+                  </div>
+                  <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                  </div>
                 </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">진행 중인 예약</p>
+                    <p class="text-3xl font-bold text-yellow-600">\${pending}</p>
+                  </div>
+                  <div class="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">완료된 예약</p>
+                    <p class="text-3xl font-bold text-green-600">\${completed}</p>
+                  </div>
+                  <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">총 지출 금액</p>
+                    <p class="text-2xl font-bold text-gray-800">$\${totalCost.toLocaleString()}</p>
+                  </div>
+                  <div class="bg-primary bg-opacity-10 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-primary text-xl"></i>
+                  </div>
+                </div>
+              </div>
+            \`;
+
+            // Quick Actions
+            document.getElementById('quick-actions').innerHTML = \`
+              <a href="/search" class="flex items-center p-4 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition">
+                <i class="fas fa-search text-2xl mr-3"></i>
+                <div>
+                  <p class="font-bold">새 선박 검색</p>
+                  <p class="text-xs opacity-80">대체 선박 찾기</p>
+                </div>
+              </a>
+              <button class="w-full flex items-center p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-headset text-2xl mr-3 text-gray-600"></i>
+                <div class="text-left">
+                  <p class="font-bold text-gray-800">긴급 문의</p>
+                  <p class="text-xs text-gray-500">24/7 고객 지원</p>
+                </div>
+              </button>
+            \`;
+
+            renderBookingsTable();
+            renderChart();
+          }
+
+          // Forwarder Dashboard
+          function loadForwarderDashboard() {
+            const thisMonth = new Date().getMonth();
+            const thisMonthBookings = allBookings.filter(b => 
+              new Date(b.created_at).getMonth() === thisMonth
+            ).length;
+            
+            const totalTEU = allBookings.reduce((sum, b) => sum + (b.quantity || 0), 0);
+            const commission = allBookings.reduce((sum, b) => sum + (b.total_price * 0.05), 0); // 5% commission
+
+            // Stats Cards
+            document.getElementById('stats-cards').innerHTML = \`
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">관리 중인 화주 수</p>
+                    <p class="text-3xl font-bold text-gray-800">5</p>
+                  </div>
+                  <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">이번 달 예약 건수</p>
+                    <p class="text-3xl font-bold text-primary">\${thisMonthBookings}</p>
+                  </div>
+                  <div class="bg-primary bg-opacity-10 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-calendar-alt text-primary text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">총 처리 TEU</p>
+                    <p class="text-3xl font-bold text-green-600">\${totalTEU}</p>
+                  </div>
+                  <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-box text-green-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 mb-1">이번 달 수수료 수익</p>
+                    <p class="text-2xl font-bold text-gray-800">$\${commission.toLocaleString()}</p>
+                  </div>
+                  <div class="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i class="fas fa-percentage text-yellow-600 text-xl"></i>
+                  </div>
+                </div>
+              </div>
+            \`;
+
+            // Quick Actions
+            document.getElementById('quick-actions').innerHTML = \`
+              <button class="w-full flex items-center p-4 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition">
+                <i class="fas fa-user-plus text-2xl mr-3"></i>
+                <div class="text-left">
+                  <p class="font-bold">화주 추가</p>
+                  <p class="text-xs opacity-80">새 고객 등록</p>
+                </div>
+              </button>
+              <button class="w-full flex items-center p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-layer-group text-2xl mr-3 text-gray-600"></i>
+                <div class="text-left">
+                  <p class="font-bold text-gray-800">일괄 예약</p>
+                  <p class="text-xs text-gray-500">여러 건 동시 예약</p>
+                </div>
+              </button>
+            \`;
+
+            renderBookingsTable();
+            renderChart();
+          }
+
+          // Render Bookings Table
+          function renderBookingsTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageBookings = allBookings.slice(start, end);
+
+            if (pageBookings.length === 0) {
+              document.getElementById('bookings-tbody').innerHTML = \`
+                <tr>
+                  <td colspan="6" class="text-center py-8">
+                    <i class="fas fa-inbox text-gray-400 text-3xl mb-2"></i>
+                    <p class="text-gray-500">예약 내역이 없습니다</p>
+                  </td>
+                </tr>
               \`;
+              return;
+            }
+
+            const statusColors = {
+              pending: 'bg-yellow-100 text-yellow-800',
+              confirmed: 'bg-green-100 text-green-800',
+              cancelled: 'bg-red-100 text-red-800',
+              completed: 'bg-blue-100 text-blue-800'
+            };
+
+            const statusLabels = {
+              pending: '대기 중',
+              confirmed: '확정',
+              cancelled: '취소됨',
+              completed: '완료'
+            };
+
+            document.getElementById('bookings-tbody').innerHTML = pageBookings.map(booking => \`
+              <tr class="border-b hover:bg-gray-50">
+                <td class="py-3 px-4">
+                  <span class="text-sm font-medium text-gray-800">\${booking.booking_reference}</span>
+                </td>
+                <td class="py-3 px-4">
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">\${booking.vessel_name}</p>
+                    <p class="text-xs text-gray-500">\${booking.carrier_name}</p>
+                  </div>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="text-sm text-gray-600">\${new Date(booking.departure_date).toLocaleDateString('ko-KR')}</span>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="px-2 py-1 rounded text-xs font-medium \${statusColors[booking.status] || 'bg-gray-100 text-gray-800'}">
+                    \${statusLabels[booking.status] || booking.status}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right">
+                  <span class="text-sm font-bold text-primary">$\${booking.total_price.toLocaleString()}</span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="viewBooking('\${booking.booking_reference}')" 
+                          class="text-primary hover:text-secondary">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            \`).join('');
+
+            // Update pagination
+            document.getElementById('page-info').textContent = \`\${start + 1}-\${Math.min(end, totalBookings)} of \${totalBookings} items\`;
+          }
+
+          // Render Chart
+          function renderChart() {
+            const ctx = document.getElementById('bookingChart').getContext('2d');
+            
+            // Sample data - last 6 months
+            const labels = ['6월', '7월', '8월', '9월', '10월', '11월'];
+            const data = [5, 8, 12, 7, 15, totalBookings || 10];
+
+            if (chart) {
+              chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: '예약 건수',
+                  data: data,
+                  borderColor: '#667eea',
+                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                  tension: 0.4,
+                  fill: true
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: 5
+                    }
+                  }
+                }
+              }
+            });
+          }
+
+          // Pagination
+          function prevPage() {
+            if (currentPage > 1) {
+              currentPage--;
+              renderBookingsTable();
+            }
+          }
+
+          function nextPage() {
+            if (currentPage < Math.ceil(totalBookings / itemsPerPage)) {
+              currentPage++;
+              renderBookingsTable();
             }
           }
 
@@ -2091,30 +2346,11 @@ app.get('/dashboard', (c) => {
             window.location.href = \`/booking/\${reference}\`;
           }
 
-          async function cancelBooking(reference) {
-            if (!confirm('예약을 취소하시겠습니까?')) return;
-
-            try {
-              await axios.patch(\`/api/bookings/\${reference}/cancel\`, {}, {
-                headers: {
-                  'Authorization': \`Bearer \${token}\`
-                }
-              });
-
-              alert('예약이 취소되었습니다.');
-              loadBookings();
-
-            } catch (error) {
-              alert('예약 취소 중 오류가 발생했습니다.');
-            }
-          }
-
-          // Load data on page load
-          loadBookings();
+          // Load dashboard on page load
+          loadDashboard();
         </script>
     </body>
     </html>
   `)
 })
-
 export default app
