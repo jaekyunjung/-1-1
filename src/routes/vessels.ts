@@ -1,4 +1,6 @@
 import { Hono } from 'hono'
+import { requireAuth, requireBasic } from '../middleware/auth.middleware'
+import { checkSearchLimit } from '../middleware/rate-limit.middleware'
 
 type Bindings = {
   DB: D1Database;
@@ -6,8 +8,12 @@ type Bindings = {
 
 const vessels = new Hono<{ Bindings: Bindings }>()
 
-// Search vessels
-vessels.get('/search', async (c) => {
+// Search vessels (Basic 이상, 검색 횟수 제한)
+vessels.get('/search', 
+  requireAuth,
+  requireBasic,
+  checkSearchLimit,
+  async (c) => {
   try {
     const departure = c.req.query('departure')
     const arrival = c.req.query('arrival')
@@ -74,10 +80,19 @@ vessels.get('/search', async (c) => {
       }
     })
 
+    // 남은 검색 횟수 추가
+    const searchRemaining = c.get('searchRemaining')
+    const user = c.get('user')
+    
     return c.json({
       success: true,
       count: vessels.length,
-      vessels
+      vessels,
+      searchInfo: {
+        remaining: searchRemaining,
+        authLevel: user?.auth_level,
+        isUnlimited: user?.auth_level === 'verified'
+      }
     })
 
   } catch (error) {

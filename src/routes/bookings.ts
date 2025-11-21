@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { requireAuth, requireVerified } from '../middleware/auth.middleware'
 
 type Bindings = {
   DB: D1Database;
@@ -6,8 +7,11 @@ type Bindings = {
 
 const bookings = new Hono<{ Bindings: Bindings }>()
 
-// Create booking
-bookings.post('/', async (c) => {
+// Create booking (Verified만)
+bookings.post('/', 
+  requireAuth,
+  requireVerified,
+  async (c) => {
   try {
     const { 
       userId, vesselId, containerType, quantity, notes,

@@ -30,8 +30,17 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return passwordHash === hash;
 }
 
-// Simple session token generation
-export function generateSessionToken(): string {
+// Simple session token generation with userId
+// Format: base64(userId:timestamp:random)
+export function generateSessionToken(userId?: number): string {
+  if (userId) {
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substring(7)
+    const payload = `${userId}:${timestamp}:${random}`
+    return btoa(payload)
+  }
+  
+  // Fallback: random token only
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return btoa(String.fromCharCode(...array));

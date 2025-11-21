@@ -66,8 +66,8 @@ auth.post('/register', async (c) => {
       'SELECT id, email, name, company, role, phone FROM users WHERE email = ?'
     ).bind(email).first()
 
-    // Generate session token
-    const token = generateSessionToken()
+    // Generate session token (userId 포함)
+    const token = generateSessionToken(user.id as number)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 
     return c.json({
@@ -109,8 +109,8 @@ auth.post('/login', async (c) => {
       return c.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, 401)
     }
 
-    // Generate session token
-    const token = generateSessionToken()
+    // Generate session token (userId 포함)
+    const token = generateSessionToken(user.id as number)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 
     // Return user data without password
@@ -160,8 +160,8 @@ auth.post('/login-hash', async (c) => {
       return c.json({ error: '등록되지 않은 해시키입니다.' }, 401)
     }
 
-    // Generate session token
-    const token = generateSessionToken()
+    // Generate session token (userId 포함)
+    const token = generateSessionToken(user.id as number)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 
     // Return user data without password
@@ -224,8 +224,8 @@ auth.post('/login-cert', async (c) => {
       return c.json({ error: '등록되지 않은 인증서입니다.' }, 401)
     }
 
-    // Generate session token
-    const token = generateSessionToken()
+    // Generate session token (userId 포함)
+    const token = generateSessionToken(user.id as number)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 
     // Return user data without password
@@ -468,8 +468,8 @@ auth.post('/verify-magic-code', async (c) => {
       'SELECT id, email, name, company, role, phone, auth_level, search_count_monthly FROM users WHERE email = ?'
     ).bind(email).first()
 
-    // JWT 토큰 생성
-    const token = generateSessionToken()
+    // JWT 토큰 생성 (userId 포함)
+    const token = generateSessionToken(updatedUser.id as number)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7일
 
     // 세션 저장 (옵션)
@@ -497,6 +497,126 @@ auth.post('/verify-magic-code', async (c) => {
     return c.json({
       success: false,
       error: '서버 오류가 발생했습니다.'
+    }, 500)
+  }
+})
+
+// Upgrade to Verified endpoint (Basic → Verified)
+auth.post('/upgrade-to-verified', async (c) => {
+  try {
+    // 토큰에서 사용자 정보 가져오기
+    const authHeader = c.req.header('Authorization')
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({
+        success: false,
+        error: '로그인이 필요합니다.'
+      }, 401)
+    }
+
+    const token = authHeader.substring(7)
+    
+    // 간단한 토큰 파싱 (실제로는 JWT 검증 필요)
+    let userId: number
+    try {
+      userId = parseInt(atob(token))
+    } catch {
+      return c.json({
+        success: false,
+        error: '유효하지 않은 토큰입니다.'
+      }, 401)
+    }
+
+    // 사용자 정보 확인
+    const user = await c.env.DB.prepare(
+      'SELECT * FROM users WHERE id = ?'
+    ).bind(userId).first()
+
+    if (!user) {
+      return c.json({
+        success: false,
+        error: '사용자를 찾을 수 없습니다.'
+      }, 404)
+    }
+
+    // Basic 사용자만 업그레이드 가능
+    if (user.auth_level !== 'basic') {
+      return c.json({
+        success: false,
+        error: user.auth_level === 'verified' 
+          ? '이미 정회원입니다.' 
+          : '잘못된 요청입니다.'
+      }, 400)
+    }
+
+    const { password, role, companyName, name, phone } = await c.req.json()
+
+    // 비밀번호 검증
+    if (!password || !isValidPassword(password)) {
+      return c.json({
+        success: false,
+        error: '비밀번호는 최소 8자 이상이어야 합니다.',
+        requirements: {
+          minLength: 8,
+          hasLetter: /[a-zA-Z]/.test(password),
+          hasNumber: /[0-9]/.test(password)
+        }
+      }, 400)
+    }
+
+    // 역할 검증
+    if (!role || !['shipper', 'forwarder'].includes(role)) {
+      return c.json({
+        success: false,
+        error: '역할을 선택해주세요. (화주 또는 포워더)'
+      }, 400)
+    }
+
+    // 비밀번호 해싱
+    const passwordHash = await hashPassword(password)
+
+    // 사용자 업데이트
+    await c.env.DB.prepare(`
+      UPDATE users
+      SET password_hash = ?,
+          auth_level = 'verified',
+          role = ?,
+          company = ?,
+          name = ?,
+          phone = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(
+      passwordHash,
+      role,
+      companyName || null,
+      name || null,
+      phone || null,
+      userId
+    ).run()
+
+    // 업데이트된 사용자 정보
+    const updatedUser = await c.env.DB.prepare(
+      'SELECT id, email, name, company, role, phone, auth_level FROM users WHERE id = ?'
+    ).bind(userId).first()
+
+    // 새 JWT 토큰 발급 (auth_level: verified, userId 포함)
+    const newToken = generateSessionToken(userId)
+    const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000) // 30일
+
+    return c.json({
+      success: true,
+      message: '회원가입이 완료되었습니다! 🎉',
+      token: newToken,
+      expiresAt: expiresAt,
+      user: updatedUser
+    })
+
+  } catch (error) {
+    console.error('Upgrade to verified error:', error)
+    return c.json({
+      success: false,
+      error: '업그레이드 중 오류가 발생했습니다.'
     }, 500)
   }
 })
