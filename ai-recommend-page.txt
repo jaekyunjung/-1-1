@@ -1,0 +1,360 @@
+// AI Recommendation page
+app.get('/ai-recommend', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI 추천 - ShipShare</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <style>
+          .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <a href="/" class="flex items-center">
+                            <i class="fas fa-ship text-primary text-2xl mr-3"></i>
+                            <span class="text-2xl font-bold text-gray-800">ShipShare</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/search" class="text-gray-600 hover:text-primary">검색</a>
+                        <a href="/blockchain" class="text-gray-600 hover:text-primary">블록체인</a>
+                        <a href="/ai-recommend" class="text-primary font-semibold">AI 추천</a>
+                        <a href="/dashboard" class="text-gray-600 hover:text-primary">대시보드</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-sign-out-alt"></i> 로그아웃
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header -->
+            <div class="gradient-bg text-white rounded-xl p-8 mb-8">
+                <h1 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-brain mr-3"></i>AI 스마트 추천
+                </h1>
+                <p class="text-xl">인공지능이 분석한 최적의 선박과 경로를 확인하세요</p>
+            </div>
+
+            <!-- AI Stats -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="text-gray-600 mb-2">총 예측 건수</div>
+                    <div class="text-3xl font-bold text-primary" id="total-predictions">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="text-gray-600 mb-2">평균 신뢰도</div>
+                    <div class="text-3xl font-bold text-green-600" id="avg-confidence">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="text-gray-600 mb-2">추천 수락률</div>
+                    <div class="text-3xl font-bold text-purple-600" id="acceptance-rate">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="text-gray-600 mb-2">총 추천 건수</div>
+                    <div class="text-3xl font-bold text-blue-600" id="total-recommendations">-</div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Price Prediction -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <i class="fas fa-chart-line mr-2 text-primary"></i>가격 예측
+                    </h2>
+                    <form id="price-prediction-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">출발지</label>
+                            <input type="text" id="predict-departure" class="w-full px-4 py-2 border rounded-lg" placeholder="예: Busan" required />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">도착지</label>
+                            <input type="text" id="predict-arrival" class="w-full px-4 py-2 border rounded-lg" placeholder="예: Los Angeles" required />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">컨테이너 타입</label>
+                            <select id="predict-container" class="w-full px-4 py-2 border rounded-lg" required>
+                                <option value="20GP">20GP</option>
+                                <option value="40GP">40GP</option>
+                                <option value="40HC">40HC</option>
+                                <option value="45HC">45HC</option>
+                                <option value="reefer">Reefer</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">예상 날짜</label>
+                            <input type="date" id="predict-date" class="w-full px-4 py-2 border rounded-lg" required />
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                            <i class="fas fa-magic mr-2"></i>AI 가격 예측
+                        </button>
+                    </form>
+                    <div id="price-result" class="mt-4"></div>
+                </div>
+
+                <!-- Demand Forecast -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <i class="fas fa-chart-area mr-2 text-primary"></i>수요 예측
+                    </h2>
+                    <form id="demand-forecast-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">경로</label>
+                            <input type="text" id="demand-route" class="w-full px-4 py-2 border rounded-lg" placeholder="예: Busan-Los Angeles" required />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">컨테이너 타입</label>
+                            <select id="demand-container" class="w-full px-4 py-2 border rounded-lg" required>
+                                <option value="20GP">20GP</option>
+                                <option value="40GP">40GP</option>
+                                <option value="40HC">40HC</option>
+                                <option value="45HC">45HC</option>
+                                <option value="reefer">Reefer</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition">
+                            <i class="fas fa-chart-bar mr-2"></i>수요 예측 분석
+                        </button>
+                    </form>
+                    <div id="demand-result" class="mt-4"></div>
+                </div>
+            </div>
+
+            <!-- Vessel Recommendations -->
+            <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-robot mr-2 text-primary"></i>AI 선박 추천
+                </h2>
+                <form id="recommend-form" class="grid md:grid-cols-5 gap-4 mb-6">
+                    <input type="text" id="rec-departure" placeholder="출발지" class="px-4 py-2 border rounded-lg" />
+                    <input type="text" id="rec-arrival" placeholder="도착지" class="px-4 py-2 border rounded-lg" />
+                    <select id="rec-container" class="px-4 py-2 border rounded-lg">
+                        <option value="">컨테이너 타입</option>
+                        <option value="20GP">20GP</option>
+                        <option value="40GP">40GP</option>
+                        <option value="40HC">40HC</option>
+                        <option value="45HC">45HC</option>
+                        <option value="reefer">Reefer</option>
+                    </select>
+                    <input type="number" id="rec-max-price" placeholder="최대 가격" class="px-4 py-2 border rounded-lg" />
+                    <button type="submit" class="bg-primary text-white py-2 rounded-lg font-bold hover:bg-secondary transition">
+                        <i class="fas fa-search mr-2"></i>추천 받기
+                    </button>
+                </form>
+                <div id="recommendations" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <script>
+          function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }
+
+          async function loadAIStats() {
+            try {
+              const response = await axios.get('/api/ai/stats');
+              if (response.data.success) {
+                const stats = response.data.stats;
+                document.getElementById('total-predictions').textContent = stats.total_predictions;
+                document.getElementById('avg-confidence').textContent = (stats.average_confidence * 100).toFixed(1) + '%';
+                document.getElementById('acceptance-rate').textContent = stats.acceptance_rate + '%';
+                document.getElementById('total-recommendations').textContent = stats.total_recommendations;
+              }
+            } catch (error) {
+              console.error('AI 통계 로드 오류:', error);
+            }
+          }
+
+          document.getElementById('price-prediction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('price-result');
+            resultDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-primary text-2xl"></i></div>';
+
+            try {
+              const response = await axios.post('/api/ai/predict-price', {
+                departure_port: document.getElementById('predict-departure').value,
+                arrival_port: document.getElementById('predict-arrival').value,
+                container_type: document.getElementById('predict-container').value,
+                date: document.getElementById('predict-date').value
+              });
+
+              if (response.data.success) {
+                const pred = response.data.prediction;
+                resultDiv.innerHTML = \`
+                  <div class="border-2 border-primary rounded-lg p-4 bg-blue-50">
+                    <div class="text-center mb-3">
+                      <div class="text-3xl font-bold text-primary">
+                        \${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(pred.predicted_price)}
+                      </div>
+                      <div class="text-sm text-gray-600 mt-1">예측 가격</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div class="text-gray-600">신뢰도</div>
+                        <div class="font-semibold">\${(pred.confidence_score * 100).toFixed(1)}%</div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">트렌드</div>
+                        <div class="font-semibold \${pred.trend === 'increasing' ? 'text-red-600' : 'text-green-600'}">
+                          \${pred.trend === 'increasing' ? '↑ 상승' : '↓ 하락'}
+                        </div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">역사적 평균</div>
+                        <div class="font-semibold">\${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(pred.historical_average)}</div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">예측 날짜</div>
+                        <div class="font-semibold">\${pred.date}</div>
+                      </div>
+                    </div>
+                  </div>
+                \`;
+              }
+            } catch (error) {
+              resultDiv.innerHTML = '<div class="text-red-600">예측에 실패했습니다. 해당 경로에 대한 데이터가 부족할 수 있습니다.</div>';
+            }
+          });
+
+          document.getElementById('demand-forecast-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('demand-result');
+            resultDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-primary text-2xl"></i></div>';
+
+            try {
+              const route = document.getElementById('demand-route').value;
+              const containerType = document.getElementById('demand-container').value;
+              const response = await axios.get(\`/api/ai/demand-forecast?route=\${route}&container_type=\${containerType}\`);
+
+              if (response.data.success) {
+                const forecast = response.data.forecast;
+                resultDiv.innerHTML = \`
+                  <div class="border-2 border-purple-500 rounded-lg p-4 bg-purple-50">
+                    <div class="text-center mb-3">
+                      <div class="text-3xl font-bold text-purple-600">\${forecast.predicted_demand}</div>
+                      <div class="text-sm text-gray-600 mt-1">예상 수요 (컨테이너)</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div class="text-gray-600">예측 기간</div>
+                        <div class="font-semibold">\${forecast.forecast_period}</div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">신뢰도</div>
+                        <div class="font-semibold \${
+                          forecast.confidence_level === 'high' ? 'text-green-600' : 'text-yellow-600'
+                        }">\${forecast.confidence_level === 'high' ? '높음' : '중간'}</div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">역사적 평균</div>
+                        <div class="font-semibold">\${forecast.historical_average}</div>
+                      </div>
+                      <div>
+                        <div class="text-gray-600">트렌드</div>
+                        <div class="font-semibold \${forecast.trend === 'increasing' ? 'text-red-600' : 'text-green-600'}">
+                          \${forecast.trend === 'increasing' ? '↑ 증가' : '↓ 감소'} (\${forecast.trend_percent}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                \`;
+              }
+            } catch (error) {
+              resultDiv.innerHTML = '<div class="text-red-600">수요 예측에 실패했습니다. 해당 경로에 대한 데이터가 부족할 수 있습니다.</div>';
+            }
+          });
+
+          document.getElementById('recommend-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const recommendDiv = document.getElementById('recommendations');
+            recommendDiv.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-primary text-3xl"></i></div>';
+
+            try {
+              const user = JSON.parse(localStorage.getItem('user') || '{}');
+              const response = await axios.post('/api/ai/recommend-vessels', {
+                user_id: user.id,
+                departure_port: document.getElementById('rec-departure').value,
+                arrival_port: document.getElementById('rec-arrival').value,
+                container_type: document.getElementById('rec-container').value,
+                max_price: document.getElementById('rec-max-price').value ? parseInt(document.getElementById('rec-max-price').value) : null
+              });
+
+              if (response.data.success) {
+                const recommendations = response.data.recommendations;
+                if (recommendations.length === 0) {
+                  recommendDiv.innerHTML = '<div class="text-center text-gray-500 py-8">조건에 맞는 선박이 없습니다.</div>';
+                  return;
+                }
+
+                recommendDiv.innerHTML = recommendations.map((vessel, index) => \`
+                  <div class="border rounded-lg p-6 hover:shadow-lg transition \${index === 0 ? 'border-2 border-primary bg-blue-50' : 'bg-white'}">
+                    \${index === 0 ? '<div class="inline-block bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold mb-3"><i class="fas fa-star mr-1"></i>최고 추천</div>' : ''}
+                    <div class="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 class="text-xl font-bold text-gray-800">\${vessel.vessel_name}</h3>
+                        <p class="text-gray-600">\${vessel.carrier_name}</p>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-2xl font-bold text-primary">\${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(vessel.price_per_unit)}</div>
+                        <div class="text-sm text-gray-600">AI 점수: \${vessel.recommendation_score}/100</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                      <div>
+                        <span class="text-gray-600">출발:</span> 
+                        <span class="font-semibold">\${vessel.departure_port}</span>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">도착:</span> 
+                        <span class="font-semibold">\${vessel.arrival_port}</span>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">출발일:</span> 
+                        <span class="font-semibold">\${vessel.departure_date}</span>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">가용 수량:</span> 
+                        <span class="font-semibold">\${vessel.available_quantity}개</span>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                      \${vessel.reasons.map(reason => \`
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                          <i class="fas fa-check mr-1"></i>\${reason}
+                        </span>
+                      \`).join('')}
+                    </div>
+                    <button onclick="window.location.href='/booking/\${vessel.id}'" class="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-secondary transition">
+                      예약하기
+                    </button>
+                  </div>
+                \`).join('');
+              }
+            } catch (error) {
+              console.error('추천 오류:', error);
+              recommendDiv.innerHTML = '<div class="text-center text-red-600 py-8">추천 조회 중 오류가 발생했습니다.</div>';
+            }
+          });
+
+          // Load AI stats on page load
+          loadAIStats();
+        </script>
+    </body>
+    </html>
+  `)
+})

@@ -4,6 +4,9 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import auth from './routes/auth'
 import vessels from './routes/vessels'
 import bookings from './routes/bookings'
+import blockchain from './routes/blockchain'
+import ai from './routes/ai'
+import pages from './routes/pages'
 
 type Bindings = {
   DB: D1Database;
@@ -21,8 +24,11 @@ app.use('/static/*', serveStatic({ root: './public' }))
 app.route('/api/auth', auth)
 app.route('/api/vessels', vessels)
 app.route('/api/bookings', bookings)
-app.route('/api/vessels', vessels)
-app.route('/api/bookings', bookings)
+app.route('/api/blockchain', blockchain)
+app.route('/api/ai', ai)
+
+// Mount page routes
+app.route('/', pages)
 
 // Landing page
 app.get('/', (c) => {
@@ -32,7 +38,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ShipShare - 블록체인 기반 선적권 거래 플랫폼</title>
+        <title>ShipShare - AI & 블록체인 기반 스마트 선적권 거래 플랫폼</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <script>
@@ -99,12 +105,12 @@ app.get('/', (c) => {
                 <div class="grid md:grid-cols-2 gap-12 items-center">
                     <div class="text-white">
                         <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                            롤오버 걱정 없는<br/>
-                            <span class="text-yellow-300">스마트 선박 예약</span>
+                            AI & 블록체인으로<br/>
+                            <span class="text-yellow-300">스마트한 선박 예약</span>
                         </h1>
                         <p class="text-xl mb-8 text-gray-100">
-                            실시간 선박 검색, 가격 비교, 즉시 예약까지<br/>
-                            ShipShare로 간편하게 해결하세요
+                            AI 가격 예측, 블록체인 보안, 실시간 검색까지<br/>
+                            ShipShare로 미래의 물류를 경험하세요
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a href="/signup" class="bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition text-center">
@@ -177,10 +183,10 @@ app.get('/', (c) => {
                     
                     <div class="text-center p-8 rounded-xl hover:shadow-xl transition">
                         <div class="bg-primary bg-opacity-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i class="fas fa-dollar-sign text-primary text-3xl"></i>
+                            <i class="fas fa-brain text-primary text-3xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">가격 비교</h3>
-                        <p class="text-gray-600">여러 선사의 운임을 한눈에 비교하고 최적의 가격을 선택하세요</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">AI 가격 예측</h3>
+                        <p class="text-gray-600">머신러닝으로 미래 운임을 예측하고 최적의 예약 시점을 추천받으세요</p>
                     </div>
                     
                     <div class="text-center p-8 rounded-xl hover:shadow-xl transition">
@@ -193,26 +199,26 @@ app.get('/', (c) => {
                     
                     <div class="text-center p-8 rounded-xl hover:shadow-xl transition">
                         <div class="bg-primary bg-opacity-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i class="fas fa-shield-alt text-primary text-3xl"></i>
+                            <i class="fas fa-cube text-primary text-3xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-800 mb-4">블록체인 보안</h3>
-                        <p class="text-gray-600">블록체인 기술로 거래의 투명성과 보안을 보장합니다</p>
+                        <p class="text-gray-600">블록체인 기술로 모든 거래를 투명하게 기록하고 변조 불가능한 스마트 계약 제공</p>
                     </div>
                     
                     <div class="text-center p-8 rounded-xl hover:shadow-xl transition">
                         <div class="bg-primary bg-opacity-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i class="fas fa-bell text-primary text-3xl"></i>
+                            <i class="fas fa-robot text-primary text-3xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">스마트 알림</h3>
-                        <p class="text-gray-600">롤오버 발생 시 실시간으로 대체 선박을 추천받으세요</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">AI 추천 시스템</h3>
+                        <p class="text-gray-600">AI가 조건에 맞는 최적의 선박과 경로를 자동으로 추천해드립니다</p>
                     </div>
                     
                     <div class="text-center p-8 rounded-xl hover:shadow-xl transition">
                         <div class="bg-primary bg-opacity-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <i class="fas fa-chart-line text-primary text-3xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">통계 분석</h3>
-                        <p class="text-gray-600">선박 이용 내역과 비용을 한눈에 파악하고 관리하세요</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">수요 예측 분석</h3>
+                        <p class="text-gray-600">AI 기반 수요 예측으로 시즌별 최적의 물류 전략을 수립하세요</p>
                     </div>
                 </div>
             </div>
@@ -303,13 +309,15 @@ app.get('/', (c) => {
                     <h4 class="font-bold mb-4">문의</h4>
                     <ul class="space-y-2 text-gray-400">
                         <li><i class="fas fa-envelope mr-2"></i>support@shipshare.com</li>
-                        <li><i class="fas fa-phone mr-2"></i>02-1234-5678</li>
-                        <li><i class="fas fa-map-marker-alt mr-2"></i>서울시 강남구</li>
+                        <li><i class="fas fa-phone mr-2"></i>053-580-5000</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>계명대학교</li>
+                        <li class="text-sm">대구광역시 달서구 달구벌대로 1095</li>
                     </ul>
                 </div>
             </div>
             <div class="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
                 <p>&copy; 2025 ShipShare. All rights reserved.</p>
+                <p class="mt-2 text-sm">계명대학교 산학협력 프로젝트</p>
             </div>
         </footer>
 
@@ -2353,4 +2361,5 @@ app.get('/dashboard', (c) => {
     </html>
   `)
 })
+
 export default app

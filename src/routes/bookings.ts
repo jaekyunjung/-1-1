@@ -78,10 +78,61 @@ bookings.post('/', async (c) => {
       'SELECT * FROM bookings WHERE booking_reference = ?'
     ).bind(bookingRef).first()
 
+    // Create blockchain transaction
+    const txHash = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`
+    const blockNumber = Math.floor(Math.random() * 1000000) + 1000000
+    
+    await c.env.DB.prepare(`
+      INSERT INTO blockchain_transactions 
+      (transaction_hash, booking_id, block_number, transaction_type, from_address, to_address, amount, status, blockchain_data)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      txHash,
+      result.meta.last_row_id,
+      blockNumber,
+      'booking',
+      `0xUser${userId}`,
+      `0xVessel${vesselId}`,
+      totalPrice,
+      'confirmed',
+      JSON.stringify({
+        gasUsed: Math.floor(Math.random() * 100000) + 21000,
+        gasPrice: '20',
+        blockHash: `0x${Math.random().toString(16).slice(2)}`,
+        network: 'ShipShare Chain',
+        timestamp: new Date().toISOString()
+      })
+    ).run()
+
+    // Create smart contract
+    const contractAddress = `0xContract${Date.now().toString(16)}${Math.random().toString(16).slice(2, 8)}`
+    await c.env.DB.prepare(`
+      INSERT INTO smart_contracts (contract_address, contract_type, booking_id, terms)
+      VALUES (?, ?, ?, ?)
+    `).bind(
+      contractAddress,
+      'booking',
+      result.meta.last_row_id,
+      JSON.stringify({
+        booking_reference: bookingRef,
+        vessel_id: vesselId,
+        container_type: containerType,
+        quantity: quantity,
+        total_price: totalPrice,
+        terms: 'Payment upon delivery confirmation',
+        auto_execute: true
+      })
+    ).run()
+
     return c.json({
       success: true,
       message: '예약이 완료되었습니다.',
-      booking
+      booking,
+      blockchain: {
+        transaction_hash: txHash,
+        block_number: blockNumber,
+        contract_address: contractAddress
+      }
     }, 201)
 
   } catch (error) {
