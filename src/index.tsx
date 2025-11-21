@@ -758,6 +758,18 @@ app.get('/search', (c) => {
           .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           }
+          .vessel-card {
+            transition: all 0.3s ease;
+          }
+          .vessel-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          }
+          .carrier-logo {
+            width: 80px;
+            height: 50px;
+            object-fit: contain;
+          }
         </style>
     </head>
     <body class="bg-gray-50">
