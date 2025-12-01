@@ -961,6 +961,7 @@ app.get('/search', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script src="/static/map-view.js"></script>
         <script>
           tailwind.config = {
             theme: {
@@ -1093,6 +1094,59 @@ app.get('/search', (c) => {
 
             <!-- Results List -->
             <div id="results" class="hidden">
+                <!-- Route Map Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-map-marked-alt text-primary mr-2"></i>항로 지도
+                        </h2>
+                        <button onclick="toggleMapView()" class="text-primary hover:text-secondary transition">
+                            <i class="fas fa-expand-alt mr-1"></i>
+                            <span id="map-toggle-text">전체화면</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Map Container -->
+                    <div id="map" class="w-full h-96 rounded-lg border-2 border-gray-200" style="min-height: 400px;">
+                        <div class="flex items-center justify-center h-full text-gray-400">
+                            <div class="text-center">
+                                <i class="fas fa-map text-6xl mb-4"></i>
+                                <p>지도를 로딩하는 중...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Route Info -->
+                    <div id="route-info" class="mt-4 p-4 bg-blue-50 rounded-lg hidden">
+                        <div class="grid md:grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">직선 거리</div>
+                                <div class="text-2xl font-bold text-primary">
+                                    <span id="distance-km">-</span> km
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <span id="distance-nm">-</span> NM (해리)
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">예상 소요 시간</div>
+                                <div class="text-2xl font-bold text-green-600">
+                                    <span id="estimated-days">-</span> 일
+                                </div>
+                                <div class="text-xs text-gray-500">평균 속도 20노트 기준</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">항로</div>
+                                <div class="text-lg font-bold text-gray-800">
+                                    <span id="route-from">-</span>
+                                    <i class="fas fa-arrow-right mx-2 text-primary"></i>
+                                    <span id="route-to">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
                         검색 결과 <span id="result-count" class="text-primary">0</span>건
@@ -1177,6 +1231,32 @@ app.get('/search', (c) => {
         <script>
           let vessels = [];
           let currentVessel = null;
+          let shipShareMap = null;
+          const GOOGLE_MAPS_API_KEY = 'AIzaSyCQzKdmApqm2cRuKqws-a4xkzMF4CjCh-A';
+
+          // Initialize map on page load
+          document.addEventListener('DOMContentLoaded', async () => {
+            try {
+              shipShareMap = new ShipShareMap(GOOGLE_MAPS_API_KEY);
+              await shipShareMap.init('map');
+              console.log('✅ Google Maps 초기화 완료');
+              
+              // Display all major ports
+              await shipShareMap.displayAllPorts();
+              console.log('✅ 주요 항구 표시 완료');
+            } catch (error) {
+              console.error('❌ 지도 초기화 실패:', error);
+              document.getElementById('map').innerHTML = \`
+                <div class="flex items-center justify-center h-full text-red-500">
+                  <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                    <p>지도를 로딩할 수 없습니다</p>
+                    <p class="text-sm">API 키를 확인해주세요</p>
+                  </div>
+                </div>
+              \`;
+            }
+          });
 
           // Search form submission
           document.getElementById('search-form').addEventListener('submit', async (e) => {
@@ -1214,12 +1294,79 @@ app.get('/search', (c) => {
                 document.getElementById('result-count').textContent = vessels.length;
                 renderVessels(vessels);
                 document.getElementById('results').classList.remove('hidden');
+                
+                // Update map with route
+                if (departure && arrival && shipShareMap) {
+                  await updateMapRoute(departure, arrival);
+                }
               }
 
             } catch (error) {
               console.error('Search error:', error);
               document.getElementById('loading').classList.add('hidden');
               document.getElementById('no-results').classList.remove('hidden');
+            }
+          }
+
+          async function updateMapRoute(departure, arrival) {
+            try {
+              // Convert port names to codes (simple mapping)
+              const portMapping = {
+                'busan': 'busan',
+                '부산': 'busan',
+                'shanghai': 'shanghai',
+                '상하이': 'shanghai',
+                'losangeles': 'losangeles',
+                'los angeles': 'losangeles',
+                'la': 'losangeles',
+                '로스앤젤레스': 'losangeles',
+                'singapore': 'singapore',
+                '싱가포르': 'singapore',
+                'tokyo': 'tokyo',
+                '도쿄': 'tokyo',
+                'hongkong': 'hongkong',
+                '홍콩': 'hongkong',
+                'rotterdam': 'rotterdam',
+                '로테르담': 'rotterdam',
+                'hamburg': 'hamburg',
+                '함부르크': 'hamburg'
+              };
+
+              const fromCode = portMapping[departure.toLowerCase()] || departure.toLowerCase();
+              const toCode = portMapping[arrival.toLowerCase()] || arrival.toLowerCase();
+
+              const routeInfo = await shipShareMap.displayRouteInfo(fromCode, toCode);
+              
+              if (routeInfo) {
+                // Show route info
+                document.getElementById('route-info').classList.remove('hidden');
+                document.getElementById('distance-km').textContent = routeInfo.distance.toFixed(0);
+                document.getElementById('distance-nm').textContent = routeInfo.nauticalMiles.toFixed(0);
+                document.getElementById('estimated-days').textContent = routeInfo.estimatedDays.toFixed(1);
+                document.getElementById('route-from').textContent = routeInfo.from.name;
+                document.getElementById('route-to').textContent = routeInfo.to.name;
+              }
+            } catch (error) {
+              console.error('지도 업데이트 실패:', error);
+              document.getElementById('route-info').classList.add('hidden');
+            }
+          }
+
+          function toggleMapView() {
+            const mapEl = document.getElementById('map');
+            const toggleText = document.getElementById('map-toggle-text');
+            
+            if (mapEl.style.height === '600px') {
+              mapEl.style.height = '400px';
+              toggleText.textContent = '전체화면';
+            } else {
+              mapEl.style.height = '600px';
+              toggleText.textContent = '축소';
+            }
+            
+            // Trigger map resize
+            if (shipShareMap && shipShareMap.map) {
+              google.maps.event.trigger(shipShareMap.map, 'resize');
             }
           }
 
