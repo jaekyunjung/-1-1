@@ -154,6 +154,27 @@ ShipShare는 AI와 블록체인 기술을 활용한 차세대 선박 예약 플�
 - `GET /api/ai/demand-forecast` - 수요 예측
 - `GET /api/ai/stats` - AI 통계
 
+### 8. 네이버 API 통합 ✅
+**네이버 검색 API** (`/api/search`) ✅
+- `GET /api/search/news` - 해운 뉴스 검색 (733,648건)
+- `GET /api/search/web` - 해운사 정보 검색 (1,648,509건)
+- `GET /api/search/images` - 컨테이너 이미지 검색 (251,288건)
+- 무료 일일 25,000건 호출 가능
+
+**네이버 지도 API** (`/api/maps`) ✅ **NEW!**
+- `GET /api/maps/ports` - 전 세계 24개 주요 항구 목록 조회
+- `GET /api/maps/ports/:code` - 특정 항구 정보 (좌표, 주소)
+- `GET /api/maps/ports/country/:code` - 국가별 항구 목록 (KR, CN, JP, US 등)
+- `GET /api/maps/distance` - 두 항구 간 거리 계산 (km, 해리, 소요시간)
+- `GET /api/maps/route` - 선박 경로 좌표 생성 (지도에 경로 표시용)
+- `GET /api/maps/geocode` - 주소 → 좌표 변환
+- `GET /api/maps/reverse-geocode` - 좌표 → 주소 변환
+- **등록 항구**: 부산, 인천, 광양, 울산 (한국), 상하이, 닝보, 선전 (중국), 도쿄, 요코하마 (일본), 싱가포르, LA, 뉴욕, 로테르담 등 24개 항구
+- **거리 계산 예시**:
+  - 부산 → 상하이: 825km (445해리) - 약 22시간 ⛴️
+  - 부산 → LA: 9,644km (5,207해리) - 약 10일 20시간 🚢
+  - 부산 → 싱가포르: 4,579km (2,472해리) - 약 5일 3시간 🌊
+
 ### 7. 사용자 대시보드 ✅
 **대시보드 페이지** (`/dashboard`)
 - 통계 카드 (총 예약, 진행 중, 확정, 총 비용)
