@@ -1137,6 +1137,18 @@ app.get('/search', (c) => {
                                 <i class="fas fa-redo mr-2"></i>초기화
                             </button>
                         </div>
+
+                        <!-- Search Guide -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-bold text-blue-900 mb-2">
+                                <i class="fas fa-info-circle mr-2"></i>검색 팁
+                            </h4>
+                            <ul class="text-sm text-blue-800 space-y-1">
+                                <li><i class="fas fa-check mr-2"></i><strong>출발지/도착지는 필수</strong> 항목입니다 (예: 부산, LA, 상하이)</li>
+                                <li><i class="fas fa-check mr-2"></i>출발일은 선택사항이며, 미입력 시 모든 일정의 선박을 검색합니다</li>
+                                <li><i class="fas fa-check mr-2"></i>검색 가능한 항구: 부산, 상하이, LA, 싱가포르, 로테르담 등</li>
+                            </ul>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -1387,11 +1399,23 @@ app.get('/search', (c) => {
             const date = document.getElementById('date').value;
             const containerType = document.getElementById('containerType').value;
 
+            console.log('🔍 검색 시작 - 입력값:', { departure, arrival, date, containerType });
+
             // Check login first
             const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log('🔑 토큰 상태:', token ? '있음' : '없음', '사용자:', user.email || '없음');
+
             if (!token) {
+              console.warn('⚠️ 토큰 없음 - 로그인 페이지로 이동');
               alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
               window.location.href = '/login';
+              return;
+            }
+
+            // Validate inputs
+            if (!departure || !arrival) {
+              alert('출발지와 도착지를 모두 입력해주세요.');
               return;
             }
 
@@ -1403,18 +1427,20 @@ app.get('/search', (c) => {
 
             try {
               const params = new URLSearchParams();
-              if (departure) params.append('departure', departure);
-              if (arrival) params.append('arrival', arrival);
+              params.append('departure', departure);
+              params.append('arrival', arrival);
               if (date) params.append('date', date);
               if (containerType) params.append('containerType', containerType);
 
-              console.log('🔍 검색 요청:', { departure, arrival, date, containerType });
+              const url = '/api/vessels/search?' + params.toString();
+              console.log('🔍 검색 요청 URL:', url);
 
-              const response = await axios.get('/api/vessels/search?' + params.toString(), {
+              const response = await axios.get(url, {
                 headers: { 'Authorization': \`Bearer \${token}\` }
               });
               
-              console.log('✅ 검색 결과:', response.data);
+              console.log('✅ 검색 응답:', response.data);
+              console.log('✅ 선박 수:', response.data.vessels.length);
               vessels = response.data.vessels;
 
               document.getElementById('loading').classList.add('hidden');
