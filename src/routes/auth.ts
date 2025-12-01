@@ -132,22 +132,23 @@ auth.post('/login', async (c) => {
 // Hash key login endpoint
 auth.post('/login-hash', async (c) => {
   try {
-    const { hash_key } = await c.req.json()
+    const { hashKey, hash_key } = await c.req.json()
+    const key = hashKey || hash_key // Support both formats
 
     // Validation
-    if (!hash_key) {
+    if (!key) {
       return c.json({ error: '해시키를 입력해주세요.' }, 400)
     }
 
     // Validate hash key format (should start with 0x and be hex)
-    if (!hash_key.startsWith('0x') || hash_key.length < 10) {
+    if (!key.startsWith('0x') || key.length < 10) {
       return c.json({ error: '올바른 해시키 형식이 아닙니다.' }, 400)
     }
 
     // In a real application, hash keys would be stored in the database
     // For demonstration, we'll map hash keys to existing user IDs
     // Using last character of hash to determine user ID (1, 2, or 3)
-    const lastChar = hash_key.slice(-1).toLowerCase()
+    const lastChar = key.slice(-1).toLowerCase()
     const charCode = lastChar.charCodeAt(0)
     const userId = (charCode % 3) + 1
 
