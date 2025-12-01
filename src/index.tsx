@@ -1132,13 +1132,13 @@ app.get('/search', (c) => {
                         <div class="grid md:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">출발지</label>
-                                <input type="text" id="departure" placeholder="예: Busan"
+                                <input type="text" id="departure" placeholder="예: 부산, 인천, Busan"
                                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">도착지</label>
-                                <input type="text" id="arrival" placeholder="예: Los Angeles"
+                                <input type="text" id="arrival" placeholder="예: 상하이, LA, Singapore"
                                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
                             </div>
                             
@@ -1180,8 +1180,14 @@ app.get('/search', (c) => {
                             </h4>
                             <ul class="text-sm text-blue-800 space-y-1">
                                 <li><i class="fas fa-check mr-2"></i><strong>출발지/도착지는 필수</strong> 항목입니다 (예: 부산, LA, 상하이)</li>
+                                <li><i class="fas fa-check mr-2"></i><strong>한글/영어 모두 가능</strong> (예: 부산=Busan, 상하이=Shanghai)</li>
                                 <li><i class="fas fa-check mr-2"></i>출발일은 선택사항이며, 미입력 시 모든 일정의 선박을 검색합니다</li>
-                                <li><i class="fas fa-check mr-2"></i>검색 가능한 항구: 부산, 상하이, LA, 싱가포르, 로테르담 등</li>
+                                <li><i class="fas fa-check mr-2"></i>검색 가능한 항구: 
+                                    <span class="font-semibold">부산, 인천, 광양, 평택</span> (한국) → 
+                                    <span class="font-semibold">LA, 뉴욕</span> (미국), 
+                                    <span class="font-semibold">상하이, 싱가포르</span> (아시아), 
+                                    <span class="font-semibold">로테르담</span> (유럽)
+                                </li>
                             </ul>
                         </div>
                     </form>
@@ -1208,7 +1214,18 @@ app.get('/search', (c) => {
             <div id="no-results" class="hidden text-center py-12">
                 <i class="fas fa-ship text-gray-300 text-6xl mb-4"></i>
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">검색 결과가 없습니다</h3>
-                <p class="text-gray-600">다른 조건으로 다시 검색해보세요</p>
+                <p class="text-gray-600 mb-4">다른 조건으로 다시 검색해보세요</p>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto text-left">
+                    <h4 class="font-bold text-yellow-900 mb-2">
+                        <i class="fas fa-lightbulb mr-2"></i>검색 팁
+                    </h4>
+                    <ul class="text-sm text-yellow-800 space-y-1">
+                        <li><i class="fas fa-arrow-right mr-2"></i><strong>한글 또는 영어</strong>로 검색 가능 (예: 부산, Busan, 상하이, Shanghai)</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i><strong>일부 글자만 입력</strong>해도 검색 가능 (예: "상하" → "상하이항" 검색)</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i><strong>날짜 필터 제거</strong> 후 재검색 (더 많은 결과)</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>이용 가능 항구: 부산, 인천, 광양, 평택 → LA, 상하이, 싱가포르, 뉴욕, 로테르담</li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Results List -->

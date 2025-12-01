@@ -20,6 +20,33 @@ vessels.get('/search',
     const date = c.req.query('date')
     const containerType = c.req.query('containerType')
 
+    // Port name mapping (English to Korean)
+    const portMapping: { [key: string]: string } = {
+      'busan': '부산',
+      'incheon': '인천',
+      'gwangyang': '광양',
+      'ulsan': '울산',
+      'pyeongtaek': '평택',
+      'shanghai': '상하이',
+      'ningbo': '닝보',
+      'shenzhen': '선전',
+      'hongkong': '홍콩',
+      'tokyo': '도쿄',
+      'yokohama': '요코하마',
+      'singapore': '싱가포르',
+      'la': 'LA',
+      'los angeles': 'LA',
+      'new york': '뉴욕',
+      'newyork': '뉴욕',
+      'rotterdam': '로테르담',
+      'hamburg': '함부르크',
+      'antwerp': '앤트워프'
+    }
+
+    // Normalize search terms (check English mapping first)
+    const normalizeDeparture = departure ? (portMapping[departure.toLowerCase()] || departure) : null
+    const normalizeArrival = arrival ? (portMapping[arrival.toLowerCase()] || arrival) : null
+
     let query = `
       SELECT 
         v.*,
@@ -33,14 +60,14 @@ vessels.get('/search',
     
     const params: any[] = []
 
-    if (departure) {
+    if (normalizeDeparture) {
       query += ' AND v.departure_port LIKE ?'
-      params.push(`%${departure}%`)
+      params.push(`%${normalizeDeparture}%`)
     }
 
-    if (arrival) {
+    if (normalizeArrival) {
       query += ' AND v.arrival_port LIKE ?'
-      params.push(`%${arrival}%`)
+      params.push(`%${normalizeArrival}%`)
     }
 
     if (date) {
