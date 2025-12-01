@@ -1131,15 +1131,32 @@ app.get('/search', (c) => {
                     <form id="search-form" class="space-y-6">
                         <div class="grid md:grid-cols-4 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">출발지</label>
-                                <input type="text" id="departure" placeholder="예: 부산, 인천, Busan"
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    출발지 
+                                    <span class="text-xs text-gray-500">(선택 시 도착지 자동 필터링)</span>
+                                </label>
+                                <input type="text" id="departure" list="departure-list" 
+                                       placeholder="예: 부산, 인천, Busan"
                                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <datalist id="departure-list">
+                                    <option value="부산항">부산 (Busan)</option>
+                                    <option value="인천항">인천 (Incheon)</option>
+                                    <option value="광양항">광양 (Gwangyang)</option>
+                                    <option value="평택항">평택 (Pyeongtaek)</option>
+                                </datalist>
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">도착지</label>
-                                <input type="text" id="arrival" placeholder="예: 상하이, LA, Singapore"
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    도착지
+                                    <span id="arrival-count" class="text-xs text-gray-500"></span>
+                                </label>
+                                <input type="text" id="arrival" list="arrival-list" 
+                                       placeholder="예: 상하이, LA, Singapore"
                                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <datalist id="arrival-list">
+                                    <!-- Dynamically populated based on departure -->
+                                </datalist>
                             </div>
                             
                             <div>
@@ -1443,6 +1460,53 @@ app.get('/search', (c) => {
                 </div>
               \`;
             }
+
+            // Departure port change event - load available destinations
+            document.getElementById('departure').addEventListener('input', async (e) => {
+              const departure = e.target.value.trim();
+              
+              if (departure.length < 2) {
+                // Reset arrival list if departure is too short
+                document.getElementById('arrival-list').innerHTML = '';
+                document.getElementById('arrival-count').textContent = '';
+                return;
+              }
+
+              try {
+                // Normalize port name
+                const portMapping = {
+                  '부산': 'busan', '부산항': 'busan',
+                  '인천': 'incheon', '인천항': 'incheon',
+                  '광양': 'gwangyang', '광양항': 'gwangyang',
+                  '평택': 'pyeongtaek', '평택항': 'pyeongtaek'
+                };
+
+                const portCode = portMapping[departure] || departure;
+                
+                const response = await axios.get(\`/api/vessels/destinations/\${portCode}\`);
+                
+                if (response.data.success && response.data.destinations.length > 0) {
+                  const destinations = response.data.destinations;
+                  const arrivalList = document.getElementById('arrival-list');
+                  
+                  arrivalList.innerHTML = destinations.map(dest => 
+                    \`<option value="\${dest}">\${dest}</option>\`
+                  ).join('');
+                  
+                  document.getElementById('arrival-count').textContent = 
+                    \`(\${destinations.length}개 항구 이용 가능)\`;
+                  
+                  console.log('✅ 도착지 목록 업데이트:', destinations);
+                } else {
+                  document.getElementById('arrival-list').innerHTML = '';
+                  document.getElementById('arrival-count').textContent = '(연결된 항구 없음)';
+                }
+              } catch (error) {
+                console.error('도착지 조회 실패:', error);
+                document.getElementById('arrival-list').innerHTML = '';
+                document.getElementById('arrival-count').textContent = '';
+              }
+            });
           });
 
           // Search form submission

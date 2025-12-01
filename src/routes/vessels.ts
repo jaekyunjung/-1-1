@@ -159,6 +159,77 @@ vessels.get('/:id', async (c) => {
   }
 })
 
+// Get available destinations for a departure port
+vessels.get('/destinations/:departure', async (c) => {
+  try {
+    const departure = c.req.param('departure')
+
+    // Port name mapping (English to Korean)
+    const portMapping: { [key: string]: string } = {
+      'busan': '부산',
+      'incheon': '인천',
+      'gwangyang': '광양',
+      'ulsan': '울산',
+      'pyeongtaek': '평택',
+      'shanghai': '상하이',
+      'ningbo': '닝보',
+      'shenzhen': '선전',
+      'hongkong': '홍콩',
+      'tokyo': '도쿄',
+      'yokohama': '요코하마',
+      'singapore': '싱가포르',
+      'la': 'LA',
+      'los angeles': 'LA',
+      'new york': '뉴욕',
+      'newyork': '뉴욕',
+      'rotterdam': '로테르담',
+      'hamburg': '함부르크',
+      'antwerp': '앤트워프'
+    }
+
+    const normalizeDeparture = portMapping[departure.toLowerCase()] || departure
+
+    const result = await c.env.DB.prepare(
+      `SELECT DISTINCT arrival_port 
+       FROM vessels 
+       WHERE departure_port LIKE ? 
+       AND status = 'available'
+       ORDER BY arrival_port`
+    ).bind(`%${normalizeDeparture}%`).all()
+
+    return c.json({
+      success: true,
+      departure: departure,
+      destinations: result.results.map((r: any) => r.arrival_port)
+    })
+
+  } catch (error) {
+    console.error('Get destinations error:', error)
+    return c.json({ error: '도착지 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// Get all available departure ports
+vessels.get('/departure-ports', async (c) => {
+  try {
+    const result = await c.env.DB.prepare(
+      `SELECT DISTINCT departure_port 
+       FROM vessels 
+       WHERE status = 'available'
+       ORDER BY departure_port`
+    ).all()
+
+    return c.json({
+      success: true,
+      ports: result.results.map((r: any) => r.departure_port)
+    })
+
+  } catch (error) {
+    console.error('Get departure ports error:', error)
+    return c.json({ error: '출발지 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // Get all vessels (for list view)
 vessels.get('/', async (c) => {
   try {
