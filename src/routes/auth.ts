@@ -68,7 +68,7 @@ auth.post('/register', async (c) => {
 
     // Generate session token (userId 포함)
     const token = generateSessionToken(user.id as number)
-    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+    const expiresAt = Date.now() + (30 * 60 * 1000) // 30 minutes
 
     return c.json({
       message: '회원가입이 완료되었습니다.',
@@ -111,7 +111,7 @@ auth.post('/login', async (c) => {
 
     // Generate session token (userId 포함)
     const token = generateSessionToken(user.id as number)
-    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+    const expiresAt = Date.now() + (30 * 60 * 1000) // 30 minutes
 
     // Return user data without password
     const { password_hash, ...userWithoutPassword } = user
@@ -163,7 +163,7 @@ auth.post('/login-hash', async (c) => {
 
     // Generate session token (userId 포함)
     const token = generateSessionToken(user.id as number)
-    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+    const expiresAt = Date.now() + (30 * 60 * 1000) // 30 minutes
 
     // Return user data without password
     const { password_hash, ...userWithoutPassword } = user

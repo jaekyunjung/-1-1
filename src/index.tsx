@@ -54,6 +54,7 @@ app.get('/', (c) => {
         <title>ShipShare - AI & 블록체인 기반 스마트 선적권 거래 플랫폼</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="/static/session-timer.js"></script>
         <script>
           tailwind.config = {
             theme: {
@@ -590,6 +591,7 @@ app.get('/login', (c) => {
               successMsg.classList.remove('hidden');
 
               localStorage.setItem('token', response.data.token);
+              localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
               setTimeout(() => {
@@ -631,6 +633,7 @@ app.get('/login', (c) => {
               hashSuccessMsg.classList.remove('hidden');
 
               localStorage.setItem('token', response.data.token);
+              localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
               setTimeout(() => {
@@ -927,6 +930,7 @@ app.get('/signup', (c) => {
 
               // Store token in localStorage
               localStorage.setItem('token', response.data.token);
+              localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
               // Redirect to dashboard after 2 seconds
@@ -962,6 +966,7 @@ app.get('/search', (c) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <script src="/static/map-view.js"></script>
+        <script src="/static/session-timer.js"></script>
         <script>
           tailwind.config = {
             theme: {
@@ -2214,6 +2219,7 @@ app.get('/dashboard', (c) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/static/session-timer.js"></script>
         <script>
           tailwind.config = {
             theme: {
