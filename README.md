@@ -106,13 +106,20 @@ ShipShare는 AI와 블록체인 기술을 활용한 차세대 선박 예약 플�
 - 📄 구현 문서: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)
 
 ### 3. 선박 검색 시스템 ✅
-**검색 페이지** (`/search`)
+**검색 페이지** (`/search`) 🗺️ **Google Maps 통합 완료!**
 - 출발지/도착지 검색
 - 날짜 필터
 - 컨테이너 타입 필터
 - 가격 정렬 (낮은/높은 순)
 - 선박 카드 목록 표시
 - 즉시 예약 기능
+- **🆕 Google Maps 인터랙티브 지도**:
+  - 전 세계 24개 주요 항구 마커 표시
+  - 출발지 → 도착지 항로 시각화
+  - 거리 정보 (km, 해리)
+  - 예상 소요 시간 (20노트 기준)
+  - 항구 클릭 시 상세 정보 표시
+  - 전체화면 토글 기능
 
 **선박 API** (`/api/vessels/*`)
 - `GET /api/vessels` - 전체 선박 목록
@@ -161,19 +168,24 @@ ShipShare는 AI와 블록체인 기술을 활용한 차세대 선박 예약 플�
 - `GET /api/search/images` - 컨테이너 이미지 검색 (251,288건)
 - 무료 일일 25,000건 호출 가능
 
-**네이버 지도 API** (`/api/maps`) ✅ **NEW!**
-- `GET /api/maps/ports` - 전 세계 24개 주요 항구 목록 조회
-- `GET /api/maps/ports/:code` - 특정 항구 정보 (좌표, 주소)
-- `GET /api/maps/ports/country/:code` - 국가별 항구 목록 (KR, CN, JP, US 등)
-- `GET /api/maps/distance` - 두 항구 간 거리 계산 (km, 해리, 소요시간)
-- `GET /api/maps/route` - 선박 경로 좌표 생성 (지도에 경로 표시용)
-- `GET /api/maps/geocode` - 주소 → 좌표 변환
-- `GET /api/maps/reverse-geocode` - 좌표 → 주소 변환
+**네이버 지도 API** (`/api/maps`) ✅ **DEPRECATED**
+- Naver Maps API는 해상 경로를 지원하지 않아 더 이상 권장되지 않습니다
+- Google Maps API로 전환됨 (아래 참조)
+
+**Google Maps Platform API** (`/api/maps-google`) ✅ **NEW!** 🗺️
+- `GET /api/maps-google/ports` - 전 세계 24개 주요 항구 목록 조회
+- `GET /api/maps-google/ports/:code` - 특정 항구 정보 (좌표, 주소)
+- `GET /api/maps-google/geocode` - 주소 → 좌표 변환 (Geocoding API)
+- `GET /api/maps-google/reverse-geocode` - 좌표 → 주소 변환
+- `GET /api/maps-google/distance` - 두 항구 간 Haversine 거리 계산 (km, 해리, 소요시간)
 - **등록 항구**: 부산, 인천, 광양, 울산 (한국), 상하이, 닝보, 선전 (중국), 도쿄, 요코하마 (일본), 싱가포르, LA, 뉴욕, 로테르담 등 24개 항구
-- **거리 계산 예시**:
+- **거리 계산 예시** (Haversine 공식):
   - 부산 → 상하이: 825km (445해리) - 약 22시간 ⛴️
   - 부산 → LA: 9,644km (5,207해리) - 약 10일 20시간 🚢
   - 부산 → 싱가포르: 4,579km (2,472해리) - 약 5일 3시간 🌊
+- **무료 한도**: 월 28,500 요청 (Geocoding API)
+- **비용**: $5 / 1,000 요청 (무료 한도 초과 시)
+- **참고**: Distance Matrix API와 Directions API는 해상 경로를 지원하지 않으므로, Haversine 공식으로 직선 거리를 계산합니다.
 
 ### 7. 사용자 대시보드 ✅
 **대시보드 페이지** (`/dashboard`)
@@ -415,7 +427,10 @@ webapp/
 │   └── 0003_add_blockchain_and_ai.sql  # 블록체인 & AI 테이블
 ├── seed.sql               # 테스트 데이터 (10개 선박)
 ├── public/
-│   └── static/            # 정적 파일
+│   └── static/
+│       ├── map-view.js    # Google Maps 클라이언트 (신규)
+│       ├── utils.js       # 유틸리티 함수
+│       └── styles.css     # 커스텀 스타일
 ├── wrangler.jsonc         # Cloudflare 설정
 ├── package.json           # 의존성 및 스크립트
 ├── ecosystem.config.cjs   # PM2 설정
@@ -530,8 +545,8 @@ POST /api/bookings
 
 ---
 
-**마지막 업데이트**: 2025-11-21
-**버전**: 2.3.0 (3단계 권한 시스템 완료) ✅
+**마지막 업데이트**: 2025-12-01
+**버전**: 2.4.0 (Google Maps 통합 완료) ✅
 **상태**: 개발 진행 중 🚧
 
 **📋 진행 상황:**
@@ -540,10 +555,12 @@ POST /api/bookings
 - ✅ 3단계: 권한 미들웨어 (완료)
 - ✅ 4단계: 프론트엔드 UI (완료)
 - ✅ 5단계: Basic → Verified 업그레이드 (완료)
-- 🔄 6단계: 통합 테스트 (진행 중)
+- ✅ 6단계: Google Maps 통합 (완료) 🗺️
+- 🔄 7단계: 통합 테스트 (진행 중)
 
 **🎉 최근 완료 기능:**
-- 매직 링크 인증 UI (6자리 코드 입력)
-- 권한 미들웨어 시스템
-- 검색 횟수 제한 (Basic 사용자)
-- 로그인 페이지 완성 (3개 탭)
+- Google Maps Platform API 통합
+- 검색 페이지에 인터랙티브 지도 추가
+- 항로 시각화 (출발지 → 도착지)
+- 거리 및 소요 시간 자동 계산
+- 24개 주요 항구 데이터베이스
