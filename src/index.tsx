@@ -135,26 +135,32 @@ app.get('/', (c) => {
                     </div>
                     <div class="hidden md:block">
                         <div class="bg-white rounded-2xl shadow-2xl p-8">
-                            <div class="text-center mb-6">
-                                <i class="fas fa-search-location text-primary text-6xl mb-4"></i>
-                                <h3 class="text-2xl font-bold text-gray-800">선박 빠른 검색</h3>
-                            </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">출발지</label>
-                                    <input type="text" placeholder="부산" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">도착지</label>
-                                    <input type="text" placeholder="로스앤젤레스" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">출발일</label>
-                                    <input type="date" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                                </div>
-                                <button class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-secondary transition">
+                            <div class="text-center">
+                                <i class="fas fa-search-location text-primary text-6xl mb-6"></i>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-4">선박 검색</h3>
+                                <p class="text-gray-600 mb-6">
+                                    전 세계 주요 항구를 연결하는<br/>
+                                    최적의 선박을 찾아보세요
+                                </p>
+                                <a href="/search" class="inline-block w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-secondary transition">
                                     <i class="fas fa-search mr-2"></i>선박 검색하기
-                                </button>
+                                </a>
+                                <div class="mt-6 pt-6 border-t">
+                                    <div class="text-sm text-gray-600 space-y-2">
+                                        <div class="flex items-center justify-center">
+                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                            <span>실시간 선박 정보</span>
+                                        </div>
+                                        <div class="flex items-center justify-center">
+                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                            <span>Google Maps 경로 표시</span>
+                                        </div>
+                                        <div class="flex items-center justify-center">
+                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                            <span>거리 및 소요시간 계산</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
