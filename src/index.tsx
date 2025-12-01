@@ -658,6 +658,13 @@ app.get('/login', (c) => {
               localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
+              console.log('✅ [이메일 로그인] localStorage 저장 완료');
+              console.log('  - Token:', response.data.token.substring(0, 20) + '...');
+              console.log('  - ExpiresAt:', response.data.expiresAt);
+              console.log('  - User:', response.data.user.email, '/', response.data.user.role);
+              console.log('  - 저장 확인 - Token:', localStorage.getItem('token') ? '있음' : '없음');
+              console.log('  - 저장 확인 - ExpiresAt:', localStorage.getItem('expiresAt'));
+
               setTimeout(() => {
                 // Check if there's a redirect parameter
                 const urlParams = new URLSearchParams(window.location.search);
@@ -702,6 +709,13 @@ app.get('/login', (c) => {
               localStorage.setItem('token', response.data.token);
               localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
+
+              console.log('✅ [해시키 로그인] localStorage 저장 완료');
+              console.log('  - Token:', response.data.token.substring(0, 20) + '...');
+              console.log('  - ExpiresAt:', response.data.expiresAt);
+              console.log('  - User:', response.data.user.email, '/', response.data.user.role);
+              console.log('  - 저장 확인 - Token:', localStorage.getItem('token') ? '있음' : '없음');
+              console.log('  - 저장 확인 - ExpiresAt:', localStorage.getItem('expiresAt'));
 
               setTimeout(() => {
                 // Check if there's a redirect parameter
@@ -2561,8 +2575,22 @@ app.get('/dashboard', (c) => {
           const token = localStorage.getItem('token');
           const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+          console.log('📊 대시보드 로드 - 세션 확인');
+          console.log('  - Token:', token ? '있음 (' + token.substring(0, 10) + '...)' : '없음');
+          console.log('  - User:', user.name || user.email || '없음');
+          console.log('  - ExpiresAt:', localStorage.getItem('expiresAt'));
+
           if (!token || !user.id) {
+            console.warn('❌ 토큰 또는 사용자 정보 없음 - 로그인 페이지로 이동');
             window.location.href = '/login';
+            return;
+          }
+
+          // Force reinitialize session timer
+          if (window.sessionTimer) {
+            console.log('🔄 세션 타이머 강제 재초기화');
+            window.sessionTimer.stop();
+            window.sessionTimer.init();
           }
 
           // Display user info
@@ -2581,8 +2609,19 @@ app.get('/dashboard', (c) => {
 
           // Logout function
           function logout() {
+            console.log('🚪 로그아웃 시작');
+            
+            // Stop session timer
+            if (window.sessionTimer) {
+              window.sessionTimer.stop();
+            }
+            
+            // Clear all session data
             localStorage.removeItem('token');
+            localStorage.removeItem('expiresAt');
             localStorage.removeItem('user');
+            
+            console.log('✅ 로그아웃 완료 - 로그인 페이지로 이동');
             window.location.href = '/login';
           }
 
