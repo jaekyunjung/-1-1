@@ -1283,7 +1283,11 @@ app.get('/search', (c) => {
               if (date) params.append('date', date);
               if (containerType) params.append('containerType', containerType);
 
-              const response = await axios.get('/api/vessels/search?' + params.toString());
+              // Get token from localStorage
+              const token = localStorage.getItem('token');
+              const headers = token ? { 'Authorization': \`Bearer \${token}\` } : {};
+
+              const response = await axios.get('/api/vessels/search?' + params.toString(), { headers });
               vessels = response.data.vessels;
 
               document.getElementById('loading').classList.add('hidden');
@@ -1304,7 +1308,14 @@ app.get('/search', (c) => {
             } catch (error) {
               console.error('Search error:', error);
               document.getElementById('loading').classList.add('hidden');
-              document.getElementById('no-results').classList.remove('hidden');
+              
+              // Check if error is authentication related
+              if (error.response && error.response.status === 401) {
+                alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                window.location.href = '/login';
+              } else {
+                document.getElementById('no-results').classList.remove('hidden');
+              }
             }
           }
 
