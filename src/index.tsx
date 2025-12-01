@@ -817,6 +817,7 @@ app.get('/signup', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script src="/static/session-timer.js"></script>
         <script>
           tailwind.config = {
             theme: {
@@ -1016,6 +1017,13 @@ app.get('/signup', (c) => {
               localStorage.setItem('token', response.data.token);
               localStorage.setItem('expiresAt', response.data.expiresAt);
               localStorage.setItem('user', JSON.stringify(response.data.user));
+
+              console.log('✅ [회원가입] localStorage 저장 완료');
+              console.log('  - Token:', response.data.token.substring(0, 20) + '...');
+              console.log('  - ExpiresAt:', response.data.expiresAt);
+              console.log('  - User:', response.data.user.email, '/', response.data.user.role);
+              console.log('  - 저장 확인 - Token:', localStorage.getItem('token') ? '있음' : '없음');
+              console.log('  - 저장 확인 - ExpiresAt:', localStorage.getItem('expiresAt'));
 
               // Redirect to dashboard after 2 seconds
               setTimeout(() => {
