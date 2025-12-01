@@ -90,8 +90,7 @@ app.get('/', (c) => {
                         <a href="#features" class="text-gray-600 hover:text-primary transition">주요 기능</a>
                         <a href="#how-it-works" class="text-gray-600 hover:text-primary transition">이용 방법</a>
                         <a href="#pricing" class="text-gray-600 hover:text-primary transition">요금</a>
-                        <a id="auth-link" href="/login" class="text-gray-600 hover:text-primary transition">로그인</a>
-                        <a href="/signup" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition">시작하기</a>
+                        <a id="auth-link" href="/login" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition">로그인</a>
                     </div>
                     <div class="md:hidden">
                         <button id="mobile-menu-btn" class="text-gray-600">
@@ -107,8 +106,7 @@ app.get('/', (c) => {
                     <a href="#features" class="block text-gray-600 hover:text-primary">주요 기능</a>
                     <a href="#how-it-works" class="block text-gray-600 hover:text-primary">이용 방법</a>
                     <a href="#pricing" class="block text-gray-600 hover:text-primary">요금</a>
-                    <a id="auth-link-mobile" href="/login" class="block text-gray-600 hover:text-primary">로그인</a>
-                    <a href="/signup" class="block bg-primary text-white px-6 py-2 rounded-lg text-center">시작하기</a>
+                    <a id="auth-link-mobile" href="/login" class="block bg-primary text-white px-6 py-2 rounded-lg text-center">로그인</a>
                 </div>
             </div>
         </nav>
@@ -127,8 +125,8 @@ app.get('/', (c) => {
                             ShipShare로 미래의 물류를 경험하세요
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <a href="/signup" class="bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition text-center">
-                                <i class="fas fa-rocket mr-2"></i>무료로 시작하기
+                            <a href="/login" class="bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition text-center">
+                                <i class="fas fa-sign-in-alt mr-2"></i>로그인
                             </a>
                             <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary transition text-center">
                                 <i class="fas fa-play-circle mr-2"></i>이용 방법 보기
@@ -269,8 +267,8 @@ app.get('/', (c) => {
                 <h2 class="text-4xl font-bold mb-6">지금 바로 시작하세요</h2>
                 <p class="text-xl mb-8">롤오버 걱정 없는 스마트한 선박 예약을 경험해보세요</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/signup" class="bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
-                        무료로 시작하기
+                    <a href="/login" class="bg-white text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>로그인하기
                     </a>
                     <a href="/search" class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary transition">
                         선박 둘러보기
@@ -333,6 +331,7 @@ app.get('/', (c) => {
               if (authLink) {
                 authLink.textContent = '\ub85c\uadf8\uc544\uc6c3';
                 authLink.href = '#';
+                authLink.className = 'bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition';
                 authLink.onclick = (e) => {
                   e.preventDefault();
                   localStorage.removeItem('token');
@@ -348,6 +347,7 @@ app.get('/', (c) => {
               if (authLinkMobile) {
                 authLinkMobile.textContent = '\ub85c\uadf8\uc544\uc6c3';
                 authLinkMobile.href = '#';
+                authLinkMobile.className = 'block bg-red-500 text-white px-6 py-2 rounded-lg text-center hover:bg-red-600 transition';
                 authLinkMobile.onclick = (e) => {
                   e.preventDefault();
                   localStorage.removeItem('token');
@@ -365,11 +365,13 @@ app.get('/', (c) => {
               if (authLink) {
                 authLink.textContent = '\ub85c\uadf8\uc778';
                 authLink.href = '/login';
+                authLink.className = 'bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition';
                 authLink.onclick = null;
               }
               if (authLinkMobile) {
                 authLinkMobile.textContent = '\ub85c\uadf8\uc778';
                 authLinkMobile.href = '/login';
+                authLinkMobile.className = 'block bg-primary text-white px-6 py-2 rounded-lg text-center';
                 authLinkMobile.onclick = null;
               }
             }
