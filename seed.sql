@@ -1,8 +1,8 @@
--- Insert test users
+-- Insert test users (password: password123)
 INSERT OR IGNORE INTO users (id, email, password_hash, name, company, role, phone) VALUES 
-  (1, 'shipper@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '김철수', '대한제조', 'shipper', '010-1234-5678'),
-  (2, 'forwarder@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '이영희', '글로벌포워딩', 'forwarder', '010-2345-6789'),
-  (3, 'carrier@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '박민수', '태평양해운', 'carrier', '010-3456-7890');
+  (1, 'shipper@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '김철수', '대한제조', 'shipper', '010-1234-5678'),
+  (2, 'forwarder@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '이영희', '글로벌포워딩', 'forwarder', '010-2345-6789'),
+  (3, 'carrier@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '박민수', '태평양해운', 'carrier', '010-3456-7890');
 
 -- Insert test vessels with major shipping lines
 DELETE FROM vessels;
