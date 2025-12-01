@@ -2278,7 +2278,9 @@ app.get('/dashboard', (c) => {
                             <!-- Chart -->
                             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                                 <h3 class="text-lg font-bold text-gray-800 mb-4">예약 추이</h3>
-                                <canvas id="bookingChart" height="100"></canvas>
+                                <div style="height: 300px; max-height: 300px;">
+                                    <canvas id="bookingChart"></canvas>
+                                </div>
                             </div>
 
                             <!-- Recent Bookings -->
@@ -2675,17 +2677,33 @@ app.get('/dashboard', (c) => {
               },
               options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
+                aspectRatio: 2.5,
                 plugins: {
                   legend: {
-                    display: false
+                    display: true,
+                    position: 'top'
+                  },
+                  tooltip: {
+                    mode: 'index',
+                    intersect: false
                   }
                 },
                 scales: {
                   y: {
                     beginAtZero: true,
                     ticks: {
-                      stepSize: 5
+                      stepSize: 5,
+                      precision: 0
+                    },
+                    grid: {
+                      display: true,
+                      color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                  },
+                  x: {
+                    grid: {
+                      display: false
                     }
                   }
                 }
