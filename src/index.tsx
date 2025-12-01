@@ -1018,6 +1018,15 @@ app.get('/search', (c) => {
                 <h1 class="text-4xl font-bold text-white mb-8 text-center">
                     <i class="fas fa-search mr-3"></i>선박 검색
                 </h1>
+
+                <!-- Login Status Banner -->
+                <div id="login-status-banner" class="hidden mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
+                    <p class="font-bold">⚠️ 로그인이 필요합니다</p>
+                    <p class="text-sm">검색 기능을 사용하려면 먼저 로그인해주세요.</p>
+                    <a href="/login" class="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                        로그인하기
+                    </a>
+                </div>
                 
                 <!-- Search Form -->
                 <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
@@ -1234,8 +1243,22 @@ app.get('/search', (c) => {
           let shipShareMap = null;
           const GOOGLE_MAPS_API_KEY = 'AIzaSyCQzKdmApqm2cRuKqws-a4xkzMF4CjCh-A';
 
+          // Check if user is logged in
+          const token = localStorage.getItem('token');
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+
           // Initialize map on page load
           document.addEventListener('DOMContentLoaded', async () => {
+            // Show login notice if not logged in
+            if (!token) {
+              console.warn('⚠️ 로그인되지 않았습니다.');
+              const banner = document.getElementById('login-status-banner');
+              if (banner) banner.classList.remove('hidden');
+            } else {
+              console.log('✅ 로그인 확인:', user.email || user.name);
+            }
+
+            // Initialize Google Maps
             try {
               shipShareMap = new ShipShareMap(GOOGLE_MAPS_API_KEY);
               await shipShareMap.init('map');
@@ -1270,6 +1293,14 @@ app.get('/search', (c) => {
             const date = document.getElementById('date').value;
             const containerType = document.getElementById('containerType').value;
 
+            // Check login first
+            const token = localStorage.getItem('token');
+            if (!token) {
+              alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+              window.location.href = '/login';
+              return;
+            }
+
             // Show loading
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('no-results').classList.add('hidden');
@@ -1283,11 +1314,13 @@ app.get('/search', (c) => {
               if (date) params.append('date', date);
               if (containerType) params.append('containerType', containerType);
 
-              // Get token from localStorage
-              const token = localStorage.getItem('token');
-              const headers = token ? { 'Authorization': \`Bearer \${token}\` } : {};
+              console.log('🔍 검색 요청:', { departure, arrival, date, containerType });
 
-              const response = await axios.get('/api/vessels/search?' + params.toString(), { headers });
+              const response = await axios.get('/api/vessels/search?' + params.toString(), {
+                headers: { 'Authorization': \`Bearer \${token}\` }
+              });
+              
+              console.log('✅ 검색 결과:', response.data);
               vessels = response.data.vessels;
 
               document.getElementById('loading').classList.add('hidden');
@@ -1306,14 +1339,19 @@ app.get('/search', (c) => {
               }
 
             } catch (error) {
-              console.error('Search error:', error);
+              console.error('❌ 검색 에러:', error);
+              console.error('에러 상세:', error.response?.data);
               document.getElementById('loading').classList.add('hidden');
               
               // Check if error is authentication related
               if (error.response && error.response.status === 401) {
-                alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 window.location.href = '/login';
               } else {
+                const errorMessage = error.response?.data?.error || '검색 중 오류가 발생했습니다.';
+                alert(errorMessage);
                 document.getElementById('no-results').classList.remove('hidden');
               }
             }
