@@ -108,6 +108,14 @@ export const MAJOR_PORTS: Record<string, PortLocation> = {
     country: 'South Korea',
     countryCode: 'KR'
   },
+  'pyeongtaek': { 
+    name: 'Pyeongtaek Port', 
+    address: 'Pyeongtaek, Gyeonggi, South Korea', 
+    lat: 36.9921, 
+    lng: 126.8220, 
+    country: 'South Korea',
+    countryCode: 'KR'
+  },
   
   // 중국 (China)
   'shanghai': { 

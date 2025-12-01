@@ -1539,24 +1539,65 @@ app.get('/search', (c) => {
             try {
               // Convert port names to codes (simple mapping)
               const portMapping = {
+                // Korean ports
                 'busan': 'busan',
                 '부산': 'busan',
+                '부산항': 'busan',
+                'incheon': 'incheon',
+                '인천': 'incheon',
+                '인천항': 'incheon',
+                'gwangyang': 'gwangyang',
+                '광양': 'gwangyang',
+                '광양항': 'gwangyang',
+                'pyeongtaek': 'pyeongtaek',
+                '평택': 'pyeongtaek',
+                '평택항': 'pyeongtaek',
+                'ulsan': 'ulsan',
+                '울산': 'ulsan',
+                '울산항': 'ulsan',
+                // Chinese ports
                 'shanghai': 'shanghai',
                 '상하이': 'shanghai',
+                '상하이항': 'shanghai',
+                'ningbo': 'ningbo',
+                '닝보': 'ningbo',
+                '닝보항': 'ningbo',
+                'shenzhen': 'shenzhen',
+                '선전': 'shenzhen',
+                '선전항': 'shenzhen',
+                'hongkong': 'hongkong',
+                '홍콩': 'hongkong',
+                '홍콩항': 'hongkong',
+                // US ports
                 'losangeles': 'losangeles',
                 'los angeles': 'losangeles',
                 'la': 'losangeles',
                 '로스앤젤레스': 'losangeles',
+                'la항': 'losangeles',
+                'newyork': 'newyork',
+                'new york': 'newyork',
+                '뉴욕': 'newyork',
+                '뉴욕항': 'newyork',
+                // Asian ports
                 'singapore': 'singapore',
                 '싱가포르': 'singapore',
+                '싱가포르항': 'singapore',
                 'tokyo': 'tokyo',
                 '도쿄': 'tokyo',
-                'hongkong': 'hongkong',
-                '홍콩': 'hongkong',
+                '도쿄항': 'tokyo',
+                'yokohama': 'yokohama',
+                '요코하마': 'yokohama',
+                '요코하마항': 'yokohama',
+                // European ports
                 'rotterdam': 'rotterdam',
                 '로테르담': 'rotterdam',
+                '로테르담항': 'rotterdam',
                 'hamburg': 'hamburg',
-                '함부르크': 'hamburg'
+                '함부르크': 'hamburg',
+                '함부르크항': 'hamburg',
+                'antwerp': 'antwerp',
+                '앤트워프': 'antwerp',
+                '앤트워프항': 'antwerp'
               };
 
               const fromCode = portMapping[departure.toLowerCase()] || departure.toLowerCase();
