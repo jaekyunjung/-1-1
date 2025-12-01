@@ -9,16 +9,16 @@ DELETE FROM vessels;
 DELETE FROM vessel_containers;
 
 INSERT INTO vessels (id, vessel_name, carrier_name, vessel_type, capacity, departure_port, arrival_port, departure_date, arrival_date, available_space, price_per_teu, status) VALUES
-  (1, 'MAERSK ESSEX', 'Maersk', 'container', 8000, '부산항', 'LA항', '2025-12-02', '2025-12-15', 250, 1850, 'available'),
-  (2, 'MAERSK SEALAND', 'Maersk', 'container', 7500, '인천항', '뉴욕항', '2025-12-04', '2025-12-22', 180, 2100, 'available'),
-  (3, 'MAERSK VIKING', 'Maersk', 'container', 9000, '부산항', '로테르담항', '2025-12-07', '2025-12-31', 320, 1950, 'available'),
-  (4, 'MSC OSCAR', 'MSC', 'container', 10000, '부산항', 'LA항', '2025-12-03', '2025-12-16', 280, 1780, 'available'),
-  (5, 'MSC ZARA', 'MSC', 'container', 8500, '광양항', '싱가포르항', '2025-12-05', '2025-12-12', 150, 980, 'available'),
-  (6, 'MSC GULSUN', 'MSC', 'container', 11000, '인천항', '상하이항', '2025-12-06', '2025-12-09', 200, 680, 'available'),
-  (7, 'CMA CGM BOUGAINVILLE', 'CMA CGM', 'container', 9500, '부산항', '로테르담항', '2025-12-09', '2026-01-01', 290, 1920, 'available'),
-  (8, 'CMA CGM ANTOINE', 'CMA CGM', 'container', 8200, '평택항', '뉴욕항', '2025-12-12', '2025-12-30', 220, 2050, 'available'),
-  (9, 'HAPAG EXPRESS', 'Hapag-Lloyd', 'container', 7800, '부산항', 'LA항', '2025-12-01', '2025-12-14', 195, 1820, 'available'),
-  (10, 'HAPAG BERLIN', 'Hapag-Lloyd', 'container', 8800, '인천항', '싱가포르항', '2025-12-10', '2025-12-17', 240, 1050, 'available');
+  (1, 'MAERSK ESSEX', 'Maersk', 'container', 8000, '부산항', 'LA항', '2025-12-03', '2025-12-16', 250, 1850, 'available'),
+  (2, 'MAERSK SEALAND', 'Maersk', 'container', 7500, '인천항', '뉴욕항', '2025-12-09', '2025-12-27', 180, 2100, 'available'),
+  (3, 'MAERSK VIKING', 'Maersk', 'container', 9000, '부산항', '로테르담항', '2025-12-19', '2026-01-12', 320, 1950, 'available'),
+  (4, 'MSC OSCAR', 'MSC', 'container', 10000, '부산항', 'LA항', '2025-12-06', '2025-12-19', 280, 1780, 'available'),
+  (5, 'MSC ZARA', 'MSC', 'container', 8500, '광양항', '싱가포르항', '2025-12-13', '2025-12-20', 150, 980, 'available'),
+  (6, 'MSC GULSUN', 'MSC', 'container', 11000, '인천항', '상하이항', '2025-12-23', '2025-12-26', 200, 680, 'available'),
+  (7, 'CMA CGM BOUGAINVILLE', 'CMA CGM', 'container', 9500, '부산항', '로테르담항', '2025-12-16', '2026-01-08', 290, 1920, 'available'),
+  (8, 'CMA CGM ANTOINE', 'CMA CGM', 'container', 8200, '평택항', '뉴욕항', '2025-12-26', '2026-01-13', 220, 2050, 'available'),
+  (9, 'HAPAG EXPRESS', 'Hapag-Lloyd', 'container', 7800, '부산항', 'LA항', '2025-12-11', '2025-12-24', 195, 1820, 'available'),
+  (10, 'HAPAG BERLIN', 'Hapag-Lloyd', 'container', 8800, '인천항', '싱가포르항', '2025-12-29', '2026-01-05', 240, 1050, 'available');
 
 -- Insert container availability for each vessel
 INSERT INTO vessel_containers (vessel_id, container_type, available_quantity, price_per_unit) VALUES

@@ -18,44 +18,44 @@ interface Vessel {
   status: string;
 }
 
-// Vessel templates with relative dates
+// Vessel templates with relative dates (distributed across 30 days)
 const vesselTemplates: Vessel[] = [
   // Maersk vessels (3)
   { id: 1, vessel_name: 'MAERSK ESSEX', carrier_name: 'Maersk', vessel_type: 'container', capacity: 8000, 
-    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 1, transit_days: 13, 
+    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 2, transit_days: 13, 
     available_space: 250, price_per_teu: 1850.00, status: 'available' },
   { id: 2, vessel_name: 'MAERSK SEALAND', carrier_name: 'Maersk', vessel_type: 'container', capacity: 7500,
-    departure_port: '인천항', arrival_port: '뉴욕항', departure_offset_days: 3, transit_days: 18,
+    departure_port: '인천항', arrival_port: '뉴욕항', departure_offset_days: 8, transit_days: 18,
     available_space: 180, price_per_teu: 2100.00, status: 'available' },
   { id: 3, vessel_name: 'MAERSK VIKING', carrier_name: 'Maersk', vessel_type: 'container', capacity: 9000,
-    departure_port: '부산항', arrival_port: '로테르담항', departure_offset_days: 6, transit_days: 24,
+    departure_port: '부산항', arrival_port: '로테르담항', departure_offset_days: 18, transit_days: 24,
     available_space: 320, price_per_teu: 1950.00, status: 'available' },
   
   // MSC vessels (3)
   { id: 4, vessel_name: 'MSC OSCAR', carrier_name: 'MSC', vessel_type: 'container', capacity: 10000,
-    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 2, transit_days: 13,
+    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 5, transit_days: 13,
     available_space: 280, price_per_teu: 1780.00, status: 'available' },
   { id: 5, vessel_name: 'MSC ZARA', carrier_name: 'MSC', vessel_type: 'container', capacity: 8500,
-    departure_port: '광양항', arrival_port: '싱가포르항', departure_offset_days: 4, transit_days: 7,
+    departure_port: '광양항', arrival_port: '싱가포르항', departure_offset_days: 12, transit_days: 7,
     available_space: 150, price_per_teu: 980.00, status: 'available' },
   { id: 6, vessel_name: 'MSC GULSUN', carrier_name: 'MSC', vessel_type: 'container', capacity: 11000,
-    departure_port: '인천항', arrival_port: '상하이항', departure_offset_days: 5, transit_days: 3,
+    departure_port: '인천항', arrival_port: '상하이항', departure_offset_days: 22, transit_days: 3,
     available_space: 200, price_per_teu: 680.00, status: 'available' },
   
   // CMA CGM vessels (2)
   { id: 7, vessel_name: 'CMA CGM BOUGAINVILLE', carrier_name: 'CMA CGM', vessel_type: 'container', capacity: 9500,
-    departure_port: '부산항', arrival_port: '로테르담항', departure_offset_days: 8, transit_days: 23,
+    departure_port: '부산항', arrival_port: '로테르담항', departure_offset_days: 15, transit_days: 23,
     available_space: 290, price_per_teu: 1920.00, status: 'available' },
   { id: 8, vessel_name: 'CMA CGM ANTOINE', carrier_name: 'CMA CGM', vessel_type: 'container', capacity: 8200,
-    departure_port: '평택항', arrival_port: '뉴욕항', departure_offset_days: 11, transit_days: 18,
+    departure_port: '평택항', arrival_port: '뉴욕항', departure_offset_days: 25, transit_days: 18,
     available_space: 220, price_per_teu: 2050.00, status: 'available' },
   
   // Hapag-Lloyd vessels (2)
   { id: 9, vessel_name: 'HAPAG EXPRESS', carrier_name: 'Hapag-Lloyd', vessel_type: 'container', capacity: 7800,
-    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 0, transit_days: 13,
+    departure_port: '부산항', arrival_port: 'LA항', departure_offset_days: 10, transit_days: 13,
     available_space: 195, price_per_teu: 1820.00, status: 'available' },
   { id: 10, vessel_name: 'HAPAG BERLIN', carrier_name: 'Hapag-Lloyd', vessel_type: 'container', capacity: 8800,
-    departure_port: '인천항', arrival_port: '싱가포르항', departure_offset_days: 9, transit_days: 7,
+    departure_port: '인천항', arrival_port: '싱가포르항', departure_offset_days: 28, transit_days: 7,
     available_space: 240, price_per_teu: 1050.00, status: 'available' }
 ];
 
