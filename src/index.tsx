@@ -659,7 +659,10 @@ app.get('/login', (c) => {
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
               setTimeout(() => {
-                window.location.href = '/dashboard';
+                // Check if there's a redirect parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                window.location.href = redirect || '/dashboard';
               }, 1000);
 
             } catch (error) {
@@ -701,7 +704,10 @@ app.get('/login', (c) => {
               localStorage.setItem('user', JSON.stringify(response.data.user));
 
               setTimeout(() => {
-                window.location.href = '/dashboard';
+                // Check if there's a redirect parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                window.location.href = redirect || '/dashboard';
               }, 1000);
 
             } catch (error) {
@@ -1089,11 +1095,12 @@ app.get('/search', (c) => {
                 </h1>
 
                 <!-- Login Status Banner -->
-                <div id="login-status-banner" class="hidden mt-16 mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
-                    <p class="font-bold">⚠️ 로그인이 필요합니다</p>
-                    <p class="text-sm">검색 기능을 사용하려면 먼저 로그인해주세요.</p>
-                    <a href="/login" class="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                        로그인하기
+                <div id="login-status-banner" class="hidden mt-16 mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded animate-pulse">
+                    <p class="font-bold text-lg">⚠️ 로그인이 필요합니다</p>
+                    <p class="text-sm mt-2">검색 기능을 사용하려면 먼저 로그인해주세요.</p>
+                    <p class="text-sm mt-1 font-semibold">3초 후 자동으로 로그인 페이지로 이동합니다...</p>
+                    <a href="/login?redirect=/search" class="inline-block mt-3 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>지금 로그인하기
                     </a>
                 </div>
                 
@@ -1363,9 +1370,15 @@ app.get('/search', (c) => {
 
             // Show login notice if not logged in
             if (!token) {
-              console.warn('⚠️ 로그인되지 않았습니다.');
+              console.warn('⚠️ 로그인되지 않았습니다. 3초 후 로그인 페이지로 이동합니다.');
               const banner = document.getElementById('login-status-banner');
-              if (banner) banner.classList.remove('hidden');
+              if (banner) {
+                banner.classList.remove('hidden');
+                // Auto redirect to login after 3 seconds
+                setTimeout(() => {
+                  window.location.href = '/login?redirect=/search';
+                }, 3000);
+              }
             } else {
               console.log('✅ 로그인 확인:', user.email || user.name);
             }
