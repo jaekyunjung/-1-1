@@ -9,9 +9,10 @@
     "deploy": "npm run build && wrangler pages deploy dist",
     "deploy:prod": "npm run build && wrangler pages deploy dist --project-name shipshare",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate-seed": "tsx scripts/seed-dynamic.ts > seed.sql",
     "db:migrate:local": "wrangler d1 migrations apply shipshare-production --local",
     "db:migrate:prod": "wrangler d1 migrations apply shipshare-production",
-    "db:seed": "wrangler d1 execute shipshare-production --local --file=./seed.sql",
+    "db:seed": "npm run db:generate-seed && wrangler d1 execute shipshare-production --local --file=./seed.sql",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate:local && npm run db:seed",
     "db:console:local": "wrangler d1 execute shipshare-production --local",
     "db:console:prod": "wrangler d1 execute shipshare-production",
@@ -25,6 +26,7 @@
     "@cloudflare/workers-types": "^4.20250705.0",
     "@hono/vite-build": "^1.2.0",
     "@hono/vite-dev-server": "^0.18.2",
+    "tsx": "^4.21.0",
     "vite": "^6.3.5",
     "wrangler": "^4.4.0"
   }
