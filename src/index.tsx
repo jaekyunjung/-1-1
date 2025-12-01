@@ -6,11 +6,17 @@ import vessels from './routes/vessels'
 import bookings from './routes/bookings'
 import blockchain from './routes/blockchain'
 import ai from './routes/ai'
+import maps from './routes/maps'
+import search from './routes/search'
 import pages from './routes/pages'
 import login from './routes/login'
 
 type Bindings = {
   DB: D1Database;
+  NAVER_MAPS_CLIENT_ID: string;
+  NAVER_MAPS_CLIENT_SECRET: string;
+  NAVER_SEARCH_CLIENT_ID: string;
+  NAVER_SEARCH_CLIENT_SECRET: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -27,6 +33,8 @@ app.route('/api/vessels', vessels)
 app.route('/api/bookings', bookings)
 app.route('/api/blockchain', blockchain)
 app.route('/api/ai', ai)
+app.route('/api/maps', maps)
+app.route('/api/search', search)
 
 // Mount page routes
 app.route('/', pages)
