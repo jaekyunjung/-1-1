@@ -90,7 +90,7 @@ app.get('/', (c) => {
                         <a href="#features" class="text-gray-600 hover:text-primary transition">주요 기능</a>
                         <a href="#how-it-works" class="text-gray-600 hover:text-primary transition">이용 방법</a>
                         <a href="#pricing" class="text-gray-600 hover:text-primary transition">요금</a>
-                        <a href="/login" class="text-gray-600 hover:text-primary transition">로그인</a>
+                        <a id="auth-link" href="/login" class="text-gray-600 hover:text-primary transition">로그인</a>
                         <a href="/signup" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition">시작하기</a>
                     </div>
                     <div class="md:hidden">
@@ -107,7 +107,7 @@ app.get('/', (c) => {
                     <a href="#features" class="block text-gray-600 hover:text-primary">주요 기능</a>
                     <a href="#how-it-works" class="block text-gray-600 hover:text-primary">이용 방법</a>
                     <a href="#pricing" class="block text-gray-600 hover:text-primary">요금</a>
-                    <a href="/login" class="block text-gray-600 hover:text-primary">로그인</a>
+                    <a id="auth-link-mobile" href="/login" class="block text-gray-600 hover:text-primary">로그인</a>
                     <a href="/signup" class="block bg-primary text-white px-6 py-2 rounded-lg text-center">시작하기</a>
                 </div>
             </div>
@@ -322,6 +322,62 @@ app.get('/', (c) => {
         </footer>
 
         <script>
+          // Check login status and update navigation
+          function updateAuthLinks() {
+            const token = localStorage.getItem('token');
+            const authLink = document.getElementById('auth-link');
+            const authLinkMobile = document.getElementById('auth-link-mobile');
+            
+            if (token) {
+              // User is logged in - show logout
+              if (authLink) {
+                authLink.textContent = '\ub85c\uadf8\uc544\uc6c3';
+                authLink.href = '#';
+                authLink.onclick = (e) => {
+                  e.preventDefault();
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('expiresAt');
+                  localStorage.removeItem('user');
+                  if (window.sessionTimer) {
+                    window.sessionTimer.stop();
+                  }
+                  alert('\ub85c\uadf8\uc544\uc6c3\ub418\uc5c8\uc2b5\ub2c8\ub2e4.');
+                  window.location.href = '/login';
+                };
+              }
+              if (authLinkMobile) {
+                authLinkMobile.textContent = '\ub85c\uadf8\uc544\uc6c3';
+                authLinkMobile.href = '#';
+                authLinkMobile.onclick = (e) => {
+                  e.preventDefault();
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('expiresAt');
+                  localStorage.removeItem('user');
+                  if (window.sessionTimer) {
+                    window.sessionTimer.stop();
+                  }
+                  alert('\ub85c\uadf8\uc544\uc6c3\ub418\uc5c8\uc2b5\ub2c8\ub2e4.');
+                  window.location.href = '/login';
+                };
+              }
+            } else {
+              // User is not logged in - show login
+              if (authLink) {
+                authLink.textContent = '\ub85c\uadf8\uc778';
+                authLink.href = '/login';
+                authLink.onclick = null;
+              }
+              if (authLinkMobile) {
+                authLinkMobile.textContent = '\ub85c\uadf8\uc778';
+                authLinkMobile.href = '/login';
+                authLinkMobile.onclick = null;
+              }
+            }
+          }
+
+          // Update on page load
+          updateAuthLinks();
+
           // Mobile menu toggle
           const mobileMenuBtn = document.getElementById('mobile-menu-btn');
           const mobileMenu = document.getElementById('mobile-menu');
@@ -1011,7 +1067,7 @@ app.get('/search', (c) => {
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="/search" class="text-primary font-bold">선박 검색</a>
                         <a href="/dashboard" class="text-gray-600 hover:text-primary transition">대시보드</a>
-                        <a href="/login" class="text-gray-600 hover:text-primary transition">로그인</a>
+                        <a id="search-auth-link" href="/login" class="text-gray-600 hover:text-primary transition">로그인</a>
                     </div>
                 </div>
             </div>
@@ -1025,7 +1081,7 @@ app.get('/search', (c) => {
                 </h1>
 
                 <!-- Login Status Banner -->
-                <div id="login-status-banner" class="hidden mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
+                <div id="login-status-banner" class="hidden mt-16 mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
                     <p class="font-bold">⚠️ 로그인이 필요합니다</p>
                     <p class="text-sm">검색 기능을 사용하려면 먼저 로그인해주세요.</p>
                     <a href="/login" class="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
@@ -1252,8 +1308,39 @@ app.get('/search', (c) => {
           const token = localStorage.getItem('token');
           const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+          // Update navigation auth link
+          function updateSearchAuthLink() {
+            const authLink = document.getElementById('search-auth-link');
+            const token = localStorage.getItem('token');
+            
+            if (authLink) {
+              if (token) {
+                authLink.textContent = '\ub85c\uadf8\uc544\uc6c3';
+                authLink.href = '#';
+                authLink.onclick = (e) => {
+                  e.preventDefault();
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('expiresAt');
+                  localStorage.removeItem('user');
+                  if (window.sessionTimer) {
+                    window.sessionTimer.stop();
+                  }
+                  alert('\ub85c\uadf8\uc544\uc6c3\ub418\uc5c8\uc2b5\ub2c8\ub2e4.');
+                  window.location.href = '/login';
+                };
+              } else {
+                authLink.textContent = '\ub85c\uadf8\uc778';
+                authLink.href = '/login';
+                authLink.onclick = null;
+              }
+            }
+          }
+
           // Initialize map on page load
           document.addEventListener('DOMContentLoaded', async () => {
+            // Update auth link
+            updateSearchAuthLink();
+
             // Show login notice if not logged in
             if (!token) {
               console.warn('⚠️ 로그인되지 않았습니다.');

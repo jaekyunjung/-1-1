@@ -54,7 +54,7 @@ class SessionTimer {
 
     const timerDiv = document.createElement('div');
     timerDiv.id = 'session-timer-display';
-    timerDiv.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg px-4 py-2 border border-gray-200 z-50';
+    timerDiv.className = 'fixed top-20 right-4 bg-white shadow-lg rounded-lg px-4 py-2 border border-gray-200 z-40';
     timerDiv.style.minWidth = '250px';
     
     timerDiv.innerHTML = `
