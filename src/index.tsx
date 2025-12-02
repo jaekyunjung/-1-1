@@ -11,6 +11,7 @@ import mapsGoogle from './routes/maps-google'
 import search from './routes/search'
 import pages from './routes/pages'
 import login from './routes/login'
+import mtis from './routes/mtis'
 
 type Bindings = {
   DB: D1Database;
@@ -19,6 +20,7 @@ type Bindings = {
   NAVER_SEARCH_CLIENT_ID: string;
   NAVER_SEARCH_CLIENT_SECRET: string;
   GOOGLE_MAPS_API_KEY: string;
+  MTIS_API_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -38,6 +40,7 @@ app.route('/api/ai', ai)
 app.route('/api/maps', maps)
 app.route('/api/maps-google', mapsGoogle)
 app.route('/api/search', search)
+app.route('/api/mtis', mtis)
 
 // Mount page routes
 app.route('/', pages)
